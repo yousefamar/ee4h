@@ -9,9 +9,9 @@
 //Process includes only once
 #ifndef INCLUDES_SEEN
 #define INCLUDES_SEEN
-#include <opencv2\core\core.hpp>
-#include <opencv2\highgui\highgui.hpp>
-#include <opencv2\imgproc\imgproc.hpp>
+#include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
 
 #include "preprocessing.h"
 #include "utils.h"
