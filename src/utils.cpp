@@ -2,7 +2,7 @@
 | Utils file for EE4H Assignment						         		 |
 |																		 |
 | Authors: Yousef Amar and Chris Lewis									 |
-| Last Modified: 28/01/2014												 |
+| Last Modified: 30/01/2014												 |
 |																		 |
 \************************************************************************/
 
@@ -13,8 +13,8 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 
-#include "preprocessing.h"
-#include "utils.h"
+#include "../include/preprocessing.h"
+#include "../include/utils.h"
 
 #include <iostream>
 #include <string>

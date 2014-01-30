@@ -2,7 +2,7 @@
 | Main code file for the EE4H Assignment (Playing card recognition)      |
 |																		 |
 | Authors: Yousef Amar and Chris Lewis									 |
-| Last Modified: 28/01/2014												 |
+| Last Modified: 30/01/2014												 |
 |																		 |
 | Dependencies: OpenCV-2.4.2											 |
 |				- opencv_core242.dll									 |
@@ -18,16 +18,14 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 
-#include "preprocessing.h"
-#include "utils.h"
+#include "../include/preprocessing.h"
+#include "../include/utils.h"
 
 #include <iostream>
 #include <string>
 #include <strstream>
 #endif
 
-//Include guards for this?
-#include "preprocessing.h"
 
 /**
   * Program entry point.
@@ -56,6 +54,10 @@ int main(int argc, char **argv)
 			//Make background black
 			cv::Mat working = make_background_black(input, 250);
 			cv::imshow("Black background", working);
+
+			//Red channel only
+			working = filter_red_channel(working, 0);
+			cv::imshow("Red channel only", working);
 
 			//Is red suit?
 			cout << "Is red suit? " << (is_red_suit(working, 250) == true ? "true" : "false") << endl;

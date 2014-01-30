@@ -2,7 +2,7 @@
 | Pre-processing file for EE4H Assignment						         |
 |																		 |
 | Authors: Yousef Amar and Chris Lewis									 |
-| Last Modified: 28/01/2014												 |
+| Last Modified: 30/01/2014												 |
 |																		 |
 \************************************************************************/
 
@@ -13,8 +13,8 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 
-#include "preprocessing.h"
-#include "utils.h"
+#include "../include/preprocessing.h"
+#include "../include/utils.h"
 
 #include <iostream>
 #include <string>
@@ -118,7 +118,7 @@ cv::Mat make_background_black(cv::Mat input, int white_level)
 	{
 		for(int x = 0; x < input_size.width; x++)
 		{
-			//Do thresholding
+			//Get BGR values
 			int b = in_data[(y)*input.step + (x)*input_channels + 0];
 			int g = in_data[(y)*input.step + (x)*input_channels + 1];
 			int r = in_data[(y)*input.step + (x)*input_channels + 2];
@@ -135,6 +135,45 @@ cv::Mat make_background_black(cv::Mat input, int white_level)
 			{
 				//Leave pixel as it is
 			}
+		}
+	}
+
+	//Finally
+	return output;
+}
+
+/**
+  * Filter an image and retain only the red channel
+  *
+  * Arugments
+  * cv::Mat input:     The card image matrix
+  *     int new_value: The value to set the green and blue channels to
+  *
+  * Returns
+  * cv::Mat: An image matrix with only the red channel remaining
+  */
+cv::Mat filter_red_channel(cv::Mat input, int new_value)
+{
+	//Get size
+	cv::Size input_size = input.size();
+
+	//Create output from input
+	cv::Mat output(input);
+
+	//Pointer to data
+	uchar *out_data = (uchar*)output.data;
+
+	//Additional image info gathered once for speed
+	int output_channels = output.channels();
+
+	//For all pixels...
+	for(int y = 0; y < input_size.height; y++)
+	{
+		for(int x = 0; x < input_size.width; x++)
+		{
+			//Set output pixel				
+			out_data[(y)*output.step + (x)*output_channels + 0] = new_value;	//B
+			out_data[(y)*output.step + (x)*output_channels + 1] = new_value;	//G	
 		}
 	}
 
