@@ -2,7 +2,7 @@
 | Pre-processing file for EE4H Assignment						         |
 |																		 |
 | Authors: Yousef Amar and Chris Lewis									 |
-| Last Modified: 30/01/2014												 |
+| Last Modified: 31/01/2014												 |
 |																		 |
 \************************************************************************/
 
@@ -182,6 +182,109 @@ cv::Mat filter_red_channel(cv::Mat input, int new_value)
 }
 
 /**
+  * Find out whether a card is a red suit card by the corners
+  *
+  * Arguments
+  * cv::Mat input:             Input card image matrix
+  *   float horiz_margin_perc: Percentage of the width of the card from each edge to include
+  *   float vert_margin_perc:  Percentage of the height of the card from each edge to include
+  *     int base_threshold:    Minimum pixel value (combat black)
+  *     int target_regions:    Minimum number of red regions to classify out of 2
+  *
+  * Returns
+  * bool: True if the card is detected to be a red suit card
+  */
+bool is_red_suit_by_corners(cv::Mat input, float horiz_margin_perc, float vert_margin_perc, int base_threshold, int target_regions)
+{
+	bool debug_this = true;
+
+	//Get size of whole image
+	cv::Size input_size = input.size();
+
+	//Store dominant colour totals
+	int red = 0, blue = 0, green = 0;
+	bool regions_red[2] = {false, false};
+
+	//Get four corner regions
+	int region_width = (int) (horiz_margin_perc * (float) input_size.width);
+	int region_height = (int) (vert_margin_perc * (float) input_size.height);
+
+	//Create region matrices, top left, bottom right...
+	cv::Mat regions[2] = {
+		input(cv::Rect(0, 0, region_width, region_height)),
+		input(cv::Rect(input_size.width - region_width, input_size.height - region_height, region_width, region_height))
+	};
+
+	//For all regions...
+	for(int i = 0; i < 2; i++)
+	{
+		//Reset totals
+		red = 0; green = 0; blue = 0;
+
+		//Pointer to data
+		uchar *data = (uchar*)regions[i].data;
+
+		//Get region channels once for speed
+		int region_channels = regions[i].channels();
+
+		//For all pixels...
+		for(int y = 0; y < region_height; y++)
+		{
+			for(int x = 0; x < region_width; x++)
+			{
+				//Get values
+				int b = data[(y)*regions[i].step + (x)*region_channels + 0];
+				int g = data[(y)*regions[i].step + (x)*region_channels + 1];
+				int r = data[(y)*regions[i].step + (x)*region_channels + 2];
+
+				if(max(r, g, b) == r && r > base_threshold)
+				{
+					red++;
+				}
+				else if(max(r, g, b) == g && g > base_threshold)
+				{
+					green++;
+				}
+				else if(max(r, g, b) == b && b > base_threshold)
+				{
+					blue++;
+				}
+				else {
+					//No action
+				}
+			}
+		}
+
+		//Compute result
+		regions_red[i] = (red > blue && red > green);
+
+		if(debug_this == true)
+		{
+			cout << "is_suit_red_by_corners: Region " << i << " totals (RGB): " << red << ", " << green << ", " << blue << endl;
+		}
+	}
+
+	//Count number of red regions
+	int count = 0;
+	for(int c = 0; c < 2; c++)
+	{
+		if(regions_red[c] == true)
+		{
+			count++;
+		}
+	}
+
+	if(debug_this == true)
+	{
+		cout << "is_suit_red_by_corners: count = " << count << "/" << target_regions << endl;
+		cout << "is_suit_red_by_corners: top left: 0, 0, " << region_width << " x " << region_height << endl;
+		cout << "is_suit_red_by_corners: bottom right: " << (input_size.width - region_width) << ", " << (input_size.height - region_height) << ", " << region_width << " x " << region_height << endl;
+	}
+
+	return count >= target_regions;
+}
+
+/**
   * Find out whether a card is a red suit card (hearts or diamonds)
   *
   * Arguments
@@ -232,8 +335,6 @@ bool is_red_suit(cv::Mat input, int base_threshold)
 			}
 		}
 	}
-
-	cout << "Totals: R:" << red << " G:" << green << " B:" << blue << endl;
 
 	//Compute result
 	return (red > blue && red > green);

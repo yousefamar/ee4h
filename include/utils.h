@@ -18,7 +18,9 @@
 
 using namespace std;
 
-void breakpoint(string message);
+void log(char *message);
+
+void log(string message);
 
 int max(int a, int b);
 

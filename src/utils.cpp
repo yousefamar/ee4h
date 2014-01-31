@@ -27,9 +27,20 @@ using namespace std;
   * Custom breakpoint message
   *
   * Arguments
+  * char *message: The message to display
+  */
+void log(char *message)
+{
+	cout << message << endl;
+}
+
+/**
+  * Custom breakpoint message
+  *
+  * Arguments
   * string message: The message to display
   */
-void breakpoint(string message)
+void log(string message)
 {
 	cout << message << endl;
 }
