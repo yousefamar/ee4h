@@ -35,3 +35,12 @@ cv::Mat canny_thresh(cv::Mat input, int low_thresh, int ratio, int kernel_size) 
 
 	return output;
 }
+
+cv::Mat morph_gradient(cv::Mat input) {
+	cv::Mat output;
+
+	cv::Mat element = getStructuringElement(cv::MORPH_RECT, cv::Size(3, 3), cv::Point(1,1));  
+	cv::morphologyEx(input, output, cv::MORPH_GRADIENT, element);
+
+	return output;
+}

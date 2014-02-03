@@ -67,7 +67,10 @@ int main(int argc, char **argv)
 			cout << "Is red suit (by corners)? " << (red == true ? "true" : "false") << endl;
 
 			// Canny Edge Detect
-			working = canny_thresh(working, 0, 3, 3);
+			//working = canny_thresh(working, 0, 3, 3);
+
+			// Morphological Gradient
+			working = morph_gradient(working);
 
 			//Show regions searched
 			int region_width = (int) (corner_h_perc * (float) input_size.width);
