@@ -2,7 +2,7 @@
 | Main code file for the EE4H Assignment (Playing card recognition)      |
 |																		 |
 | Authors: Yousef Amar and Chris Lewis									 |
-| Last Modified: 31/01/2014												 |
+| Last Modified: 03/02/2014												 |
 |																		 |
 | Dependencies: OpenCV-2.4.2											 |
 |				- opencv_core242.dll									 |
@@ -11,20 +11,9 @@
 |				- tbb.dll (Built for Intel x64)							 |
 \************************************************************************/
 
-//Process includes only once
-#ifndef INCLUDES_SEEN
-#define INCLUDES_SEEN
-#include <opencv2/core/core.hpp>
-#include <opencv2/highgui/highgui.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
+#include "../include/stdafx.h"
 
-#include "../include/preprocessing.h"
-#include "../include/utils.h"
-
-#include <iostream>
-#include <string>
-#include <strstream>
-#endif
+using namespace std;
 
 //Configuration
 cv::Scalar 

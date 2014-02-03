@@ -2,24 +2,11 @@
 | Pre-processing file for EE4H Assignment						         |
 |																		 |
 | Authors: Yousef Amar and Chris Lewis									 |
-| Last Modified: 31/01/2014												 |
+| Last Modified: 03/02/2014												 |
 |																		 |
 \************************************************************************/
 
-//Process includes only once
-#ifndef INCLUDES_SEEN
-#define INCLUDES_SEEN
-#include <opencv2/core/core.hpp>
-#include <opencv2/highgui/highgui.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
-
-#include "../include/preprocessing.h"
-#include "../include/utils.h"
-
-#include <iostream>
-#include <string>
-#include <strstream>
-#endif
+#include "../include/stdafx.h"
 
 using namespace std;
 
@@ -196,7 +183,7 @@ cv::Mat filter_red_channel(cv::Mat input, int new_value)
   */
 bool is_red_suit_by_corners(cv::Mat input, float horiz_margin_perc, float vert_margin_perc, int base_threshold, int target_regions)
 {
-	bool debug_this = true;
+	bool debug_this = false;
 
 	//Get size of whole image
 	cv::Size input_size = input.size();

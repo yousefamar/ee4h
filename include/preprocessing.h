@@ -1,18 +1,6 @@
-//Process includes only once
-#ifndef INCLUDES_SEEN
-#define INCLUDES_SEEN
-#include <opencv2\core\core.hpp>
-#include <opencv2\highgui\highgui.hpp>
-#include <opencv2\imgproc\imgproc.hpp>
+#include "../include/stdafx.h"
 
-#include "preprocessing.h"
-#include "utils.h"
-
-#include <iostream>
-#include <string>
-#include <strstream>
-#endif
-
+//Include guard
 #ifndef PREPROCESSING_H
 #define PREPROCESSING_H
 

@@ -2,24 +2,11 @@
 | Utils file for EE4H Assignment						         		 |
 |																		 |
 | Authors: Yousef Amar and Chris Lewis									 |
-| Last Modified: 30/01/2014												 |
+| Last Modified: 03/02/2014												 |
 |																		 |
 \************************************************************************/
 
-//Process includes only once
-#ifndef INCLUDES_SEEN
-#define INCLUDES_SEEN
-#include <opencv2/core/core.hpp>
-#include <opencv2/highgui/highgui.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
-
-#include "../include/preprocessing.h"
-#include "../include/utils.h"
-
-#include <iostream>
-#include <string>
-#include <strstream>
-#endif
+#include "../include/stdafx.h"
 
 using namespace std;
 
