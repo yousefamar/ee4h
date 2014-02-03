@@ -66,6 +66,9 @@ int main(int argc, char **argv)
 			bool red = is_red_suit_by_corners(working, corner_h_perc, corner_v_perc, 250, 2);
 			cout << "Is red suit (by corners)? " << (red == true ? "true" : "false") << endl;
 
+			// Canny Edge Detect
+			working = canny_thresh(working, 60, 3, 3);
+
 			//Show regions searched
 			int region_width = (int) (corner_h_perc * (float) input_size.width);
 			int region_height = (int) (corner_v_perc * (float) input_size.height);
