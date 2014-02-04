@@ -72,6 +72,9 @@ int main(int argc, char **argv)
 			// Morphological Gradient
 			working = morph_gradient(working);
 
+			// Count symbols, -4 for corners
+			int sym_count = count_blobs(working) - 4;
+
 			//Show regions searched
 			int region_width = (int) (corner_h_perc * (float) input_size.width);
 			int region_height = (int) (corner_v_perc * (float) input_size.height);
@@ -88,6 +91,9 @@ int main(int argc, char **argv)
 
 			//Suit colour
 			cv::putText(working, (red == true ? string("RED") : string("BLACK")), cv::Point(5, 60), cv::FONT_HERSHEY_PLAIN, 5, text_colour, 3, 8, false);
+
+			//Symbol count
+			cv::putText(working, to_string(sym_count), cv::Point(5, 120), cv::FONT_HERSHEY_PLAIN, 5, text_colour, 3, 8, false);
 
 			//Show results until key press
 			cv::imshow("Results", working);
