@@ -57,6 +57,12 @@ int main(int argc, char **argv)
 			//Make background black
 			cv::Mat working = make_background_black(input, 250);
 
+			//Binary thresh
+			cv::Mat grey;
+			cvtColor(input, grey, CV_BGR2GRAY);
+			cv::Mat working_bin;
+			threshold(grey, working_bin, 250, 255, cv::THRESH_BINARY_INV);
+
 			//Filter only red
 			working = filter_red_channel(working, 0);
 
@@ -72,8 +78,8 @@ int main(int argc, char **argv)
 			// Morphological Gradient
 			working = morph_gradient(working);
 
-			// Count symbols, -4 for corners
-			int sym_count = count_blobs(working) - 4;
+			// Count symbols, -4 for corners, -1 for border
+			int sym_count = count_blobs(working_bin) - 4 - 1;
 
 			//Show regions searched
 			int region_width = (int) (corner_h_perc * (float) input_size.width);
