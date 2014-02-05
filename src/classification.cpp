@@ -1,8 +1,8 @@
 /************************************************************************\
-| Pre-processing file for EE4H Assignment						         |
+| Classification file for EE4H Assignment						         |
 |																		 |
 | Authors: Yousef Amar and Chris Lewis									 |
-| Last Modified: 03/02/2014												 |
+| Last Modified: 05/02/2014												 |
 |																		 |
 \************************************************************************/
 
