@@ -10,7 +10,8 @@
 
 using namespace std;
 
-cv::Mat canny_thresh(cv::Mat input, int low_thresh, int ratio, int kernel_size) {
+cv::Mat canny_thresh(cv::Mat input, int low_thresh, int ratio, int kernel_size)
+{
 	cv::Mat grey, edges;
 
 	//Get size
@@ -36,11 +37,45 @@ cv::Mat canny_thresh(cv::Mat input, int low_thresh, int ratio, int kernel_size) 
 	return output;
 }
 
-cv::Mat morph_gradient(cv::Mat input) {
+cv::Mat morph_gradient(cv::Mat input)
+{
 	cv::Mat output;
 
 	cv::Mat element = getStructuringElement(cv::MORPH_RECT, cv::Size(3, 3), cv::Point(1,1));  
 	cv::morphologyEx(input, output, cv::MORPH_GRADIENT, element);
 
 	return output;
+}
+
+int count_blobs(cv::Mat input)
+{
+	if (input.channels() > 1)
+	{
+		cerr << "Error: Cannot count blobs on an image with more than 1 channel." << endl;
+		return -1;
+	}
+
+	int count = 0;
+
+	//Get size
+	cv::Size input_size = input.size();
+
+	//Pointer to data - fastest access method
+	uchar *in_data = (uchar*)input.data;
+
+	//For all pixels...
+	for(int y = 0; y < input_size.height; y++)
+	{
+		for(int x = 0; x < input_size.width; x++)
+		{
+			// Count blob then remove by flood-filling it out
+			if(in_data[y*input.step + x])
+			{
+				++count;
+				cv::floodFill(input, cv::Point(x, y), cv::Scalar(0));
+			}
+		}
+	}
+
+	return count;
 }
