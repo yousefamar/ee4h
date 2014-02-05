@@ -90,7 +90,7 @@ cv::Mat make_background_black(cv::Mat input, int white_level)
 	cv::Size input_size = input.size();
 
 	//Create output
-	cv::Mat output(input);
+	cv::Mat output = input.clone();
 
 	//Pointer to data
 	uchar *in_data = (uchar*)input.data;
@@ -145,7 +145,7 @@ cv::Mat filter_red_channel(cv::Mat input, int new_value)
 	cv::Size input_size = input.size();
 
 	//Create output from input
-	cv::Mat output(input);
+	cv::Mat output = input.clone();
 
 	//Pointer to data
 	uchar *out_data = (uchar*)output.data;
