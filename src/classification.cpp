@@ -56,6 +56,7 @@ int count_blobs(cv::Mat input)
 	}
 
 	int count = 0;
+	input = input.clone();
 
 	//Get size
 	cv::Size input_size = input.size();
