@@ -53,24 +53,29 @@ int main(int argc, char **argv)
 			
 			//Show image details
 			cout << "'" << argv[1] << "' is " << input_size.width << " by " << input_size.height << " pixels." << endl << endl;
+			cv::imshow("Input", input);
 
 			//Make background black
-			cv::Mat working = make_background_black(input, 250);
+			cv::Mat working = make_background_black(input, 100);
+			cv::imshow("Black backgound", working);
 
 			//Binary thresh
 			cv::Mat grey;
 			cv::cvtColor(input, grey, CV_BGR2GRAY);
 			cv::Mat working_bin;
-			cv::threshold(grey, working_bin, 250, 255, cv::THRESH_BINARY_INV);
+			cv::threshold(grey, working_bin, 100, 255, cv::THRESH_BINARY_INV);
+			cv::imshow("Binary Threshold", working_bin);
 
 			//Filter only red
 			working = filter_red_channel(working, 0);
+			cv::imshow("Red Channel", working);
 
 			//Is red suit?
-			results.detected_colour = is_red_suit_by_corners(working, corner_h_perc, corner_v_perc, 250, 2) == true ? Results::RED : Results::BLACK;
+			results.detected_colour = is_red_suit_by_corners(working, corner_h_perc, corner_v_perc, 100, 2) == true ? Results::RED : Results::BLACK;
 
 			// Morphological Gradient
 			working = morph_gradient(working);
+			cv::imshow("Morphological Gradient", working);
 
 			// Count symbols, -4 for corners, -1 for border
 			results.detected_value = count_blobs(working_bin) - 4 - 1;

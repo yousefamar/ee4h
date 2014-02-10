@@ -63,8 +63,13 @@ void Results::show()
 		break;
 	}
 
+	//Detected value
+	stringstream val_stream;
+	val_stream << "Value: " << detected_value;
+	cv::putText(canvas, val_stream.str(), cv::Point(10, 110), CV_FONT_HERSHEY_PLAIN, 2, cv::Scalar(0, 0, 0), 1, 8, false);
+
 	//Finally
-	stringstream s;
-	s << WINDOW_TITLE;
-	cv::imshow(s.str(), canvas);
+	stringstream title_stream;
+	title_stream << WINDOW_TITLE;
+	cv::imshow(title_stream.str(), canvas);
 }
