@@ -59,13 +59,6 @@ int main(int argc, char **argv)
 			cv::Mat working = make_background_black(input, 100);
 			cv::imshow("Black backgound", working);
 
-			//Binary thresh
-			cv::Mat grey;
-			cv::cvtColor(input, grey, CV_BGR2GRAY);
-			cv::Mat working_bin;
-			cv::threshold(grey, working_bin, 100, 255, cv::THRESH_BINARY_INV);
-			cv::imshow("Binary Threshold", working_bin);
-
 			//Filter only red
 			working = filter_red_channel(working, 0);
 			cv::imshow("Red Channel", working);
@@ -73,8 +66,21 @@ int main(int argc, char **argv)
 			//Is red suit?
 			results.detected_colour = is_red_suit_by_corners(working, corner_h_perc, corner_v_perc, 100, 2) == true ? Results::RED : Results::BLACK;
 
+			//Binary thresh
+			cv::Mat grey;
+			cv::cvtColor(input, grey, CV_BGR2GRAY);
+			cv::Mat working_bin;
+			cv::threshold(grey, working_bin, 100, 255, cv::THRESH_BINARY_INV);
+			cv::imshow("Binary Threshold", working_bin);
+			
+			//Open/close to remove small imperfections
+			cv::Mat element = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(3, 3), cv::Point(0,0));
+			cv::morphologyEx(working_bin, working, cv::MORPH_CLOSE, element);
+			cv::morphologyEx(working, working, cv::MORPH_OPEN, element);
+			cv::imshow("Morph close & open", working);
+
 			// Morphological Gradient
-			working = morph_gradient(working);
+			working = morph_gradient(working_bin);
 			cv::imshow("Morphological Gradient", working);
 
 			// Count symbols, -4 for corners, -1 for border
