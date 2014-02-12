@@ -2,7 +2,7 @@
 | Main code file for the EE4H Assignment (Playing card recognition)      |
 |																		 |
 | Authors: Yousef Amar and Chris Lewis									 |
-| Last Modified: 05/02/2014												 |
+| Last Modified: 12/02/2014												 |
 |																		 |
 | Dependencies: OpenCV-2.4.2											 |
 |				- opencv_core242.dll									 |
@@ -53,15 +53,19 @@ int main(int argc, char **argv)
 			
 			//Show image details
 			cout << "'" << argv[1] << "' is " << input_size.width << " by " << input_size.height << " pixels." << endl << endl;
-			cv::imshow("Input", input);
+			//cv::imshow("Input", input);
+
+			//Find card in image
+			cv::Mat temp = find_card(input);
+			cv::imshow("Temp", temp);
 
 			//Make background black
 			cv::Mat working = make_background_black(input, 100);
-			cv::imshow("Black backgound", working);
+			//cv::imshow("Black backgound", working);
 
 			//Filter only red
 			working = filter_red_channel(working, 0);
-			cv::imshow("Red Channel", working);
+			//cv::imshow("Red Channel", working);
 
 			//Is red suit?
 			results.detected_colour = is_red_suit_by_corners(working, corner_h_perc, corner_v_perc, 100, 2) == true ? Results::RED : Results::BLACK;
@@ -71,17 +75,17 @@ int main(int argc, char **argv)
 			cv::cvtColor(input, grey, CV_BGR2GRAY);
 			cv::Mat working_bin;
 			cv::threshold(grey, working_bin, 100, 255, cv::THRESH_BINARY_INV);
-			cv::imshow("Binary Threshold", working_bin);
+			//cv::imshow("Binary Threshold", working_bin);
 			
 			//Open/close to remove small imperfections
 			cv::Mat element = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(3, 3), cv::Point(0,0));
 			cv::morphologyEx(working_bin, working, cv::MORPH_CLOSE, element);
 			cv::morphologyEx(working, working, cv::MORPH_OPEN, element);
-			cv::imshow("Morph close & open", working);
+			//cv::imshow("Morph close & open", working);
 
 			// Morphological Gradient
 			working = morph_gradient(working_bin);
-			cv::imshow("Morphological Gradient", working);
+			//cv::imshow("Morphological Gradient", working);
 
 			// Count symbols, -4 for corners, -1 for border
 			results.detected_value = count_blobs(working_bin) - 4 - 1;
@@ -104,7 +108,7 @@ int main(int argc, char **argv)
 			results.show();
 
 			//Show results until key press
-			cv::imshow("Results", working);
+			//cv::imshow("Results", working);
 			cv::waitKey(0);
 
 			//Finally
