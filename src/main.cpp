@@ -105,7 +105,7 @@ int main(int argc, char **argv)
 			cv::rectangle(working, start, finish, line_colour, 1, 8, 0);
 
 			//Show results window
-			results.show();
+			//results.show();
 
 			//Show results until key press
 			//cv::imshow("Results", working);
