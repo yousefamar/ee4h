@@ -2,64 +2,79 @@
 | Card isolation file for EE4H Assignment						         |
 |																		 |
 | Authors: Yousef Amar and Chris Lewis									 |
-| Last Modified: 17/02/2014												 |
+| Last Modified: 19/02/2014												 |
 |																		 |
 \************************************************************************/
 
 #include "../include/stdafx.h"
 
 using namespace std;
-using namespace cv;
 
-int N = 255;
+//Globals - may be more elegant another way
+static int current_square = 0;
+static int current_threshold = 0;
+static cv::Mat current_image;
 
-void findSquares(Mat image, vector<vector<Point> >& squares)
+/*
+ * Find the number of squares in an image.
+ * 
+ * Arguments
+ *                cv::Mat image:     The image input
+ * vector<vector<Point>>& squares:   The array of squares
+ *                    int threshold: Threshold for finding a quad
+ */
+static void find_squares(cv::Mat image, vector<vector<cv::Point>>& squares, int threshold)
 {
 	squares.clear();
 
-	Mat timg, gray0(image.size(), CV_8U), gray;
-	blur(image, timg, cv::Size(4, 4));
+	cv::Mat timg, gray0(image.size(), CV_8U), gray;
+	cv::blur(image, timg, cv::Size(4, 4));
 	cv::cvtColor(timg, gray0, CV_BGR2GRAY);
 
 	cv::imshow("Contours", gray0);
 
-	vector<vector<Point> > contours;
+	vector<vector<cv::Point> > contours;
 
-	// try several threshold levels
-	for(int l = 0; l < N; l++)
+	// tgray(x,y) = gray(x,y) < (l+1)*255/N ? 255 : 0
+	gray = gray0 >= threshold;
+
+	// find contours and store them all as a list
+	cv::findContours(gray, contours, cv::RETR_LIST, cv::CHAIN_APPROX_SIMPLE);
+
+	vector<cv::Point> approx;
+
+	// test each contour
+	for(size_t i = 0; i < contours.size(); i++)
 	{
-		// tgray(x,y) = gray(x,y) < (l+1)*255/N ? 255 : 0
-		gray = gray0 >= (l+1)*255/N;
+		// approximate contour with accuracy proportional
+		// to the contour perimeter
+		cv::approxPolyDP(cv::Mat(contours[i]), approx, cv::arcLength(cv::Mat(contours[i]), true)*0.02, true);
 
-		// find contours and store them all as a list
-		findContours(gray, contours, RETR_LIST, CHAIN_APPROX_SIMPLE);
-
-		vector<Point> approx;
-
-		// test each contour
-		for(size_t i = 0; i < contours.size(); i++)
+		// square contours should have 4 vertices after approximation
+		// relatively large area (to filter out noisy contours)
+		// and be convex.
+		// Note: absolute value of an area is used because
+		// area may be positive or negative - in accordance with the
+		// contour orientation
+		if( approx.size() == 4 &&
+			fabs(cv::contourArea(cv::Mat(approx))) > 1000 &&
+			cv::isContourConvex(cv::Mat(approx)))
 		{
-			// approximate contour with accuracy proportional
-			// to the contour perimeter
-			approxPolyDP(Mat(contours[i]), approx, arcLength(Mat(contours[i]), true)*0.02, true);
 
-			// square contours should have 4 vertices after approximation
-			// relatively large area (to filter out noisy contours)
-			// and be convex.
-			// Note: absolute value of an area is used because
-			// area may be positive or negative - in accordance with the
-			// contour orientation
-			if( approx.size() == 4 &&
-				fabs(contourArea(Mat(approx))) > 1000 &&
-				isContourConvex(Mat(approx)) )
-			{
-
-				squares.push_back(approx);
-			}
+			squares.push_back(approx);
 		}
 	}
 }
 
+/*
+ * Apply a Hough Transform (!)
+ *
+ * Arguments
+ * cv::Mat input: Input image
+ *
+ * Returns
+ * cv::Mat: Output with lines drawn on
+ */
 cv::Mat hough_trans(cv::Mat input)
 {
 	cv::Mat edges, output;
@@ -68,7 +83,7 @@ cv::Mat hough_trans(cv::Mat input)
 	cv::cvtColor(edges, output, cv::COLOR_GRAY2BGR);
 
 	vector<cv::Vec4i> lines;
-	cv::HoughLinesP(edges, lines, 1, CV_PI/180, 50, 50, 10 );
+	cv::HoughLinesP(edges, lines, 1, CV_PI/180, 50, 50, 10);
 	for(size_t i = 0; i < lines.size(); i++)
 	{
 		cv::Vec4i l = lines[i];
@@ -76,6 +91,14 @@ cv::Mat hough_trans(cv::Mat input)
 	}
 
 	return output;
+}
+
+static void on_trackbar_change(int, void*)
+{
+	find_card(current_image, current_square, current_threshold);
+
+	//Reset card number
+	current_square = 0;
 }
 
 /**
@@ -87,25 +110,31 @@ cv::Mat hough_trans(cv::Mat input)
   * Returns
   * cv::Mat: A perspective-corrected image of a card
   */
-cv::Mat find_card(cv::Mat input)
+cv::Mat find_card(cv::Mat input, int which_square, int threshold)
 {
-	Mat found = input.clone();
+	cv::Mat found = input.clone();
 
-	vector<vector<Point> > squares;
+	//Assign to global for use in callback
+	current_image = input.clone();
+	current_threshold = threshold;
 
-	findSquares(found, squares);
+	vector<vector<cv::Point>> squares;
+
+	find_squares(found, squares, threshold);
 
 	printf("%lu cards found.\n", squares.size());
 
 	for(size_t i = 0; i < squares.size(); i++)
 	{
-		const Point* p = &squares[i][0];
+		const cv::Point* p = &squares[i][0];
 		int n = (int)squares[i].size();
-		polylines(found, &p, &n, 1, true, Scalar(0,255,0), 3, CV_AA);
+		cv::polylines(found, &p, &n, 1, true, cv::Scalar(0,255,0), 1, CV_AA);
 	}
 
 	cv::imshow("Card Found", found);
-
+	
+	//Add threshold trackbar
+	cv::createTrackbar("tb_thresh", "Card Found", &current_threshold, 255, on_trackbar_change);
 
 	// Define the destination image
 	cv::Mat quad = cv::Mat::zeros(350, 250, CV_8UC3);
@@ -117,18 +146,34 @@ cv::Mat find_card(cv::Mat input)
 	quad_pts.push_back(cv::Point2f(quad.cols, quad.rows));
 	quad_pts.push_back(cv::Point2f(0, quad.rows));
 
-	std::vector<cv::Point2f> corners;
-	corners.push_back(cv::Point2f(squares[0][3].x, squares[0][3].y));
-	corners.push_back(cv::Point2f(squares[0][2].x, squares[0][2].y));
-	corners.push_back(cv::Point2f(squares[0][1].x, squares[0][1].y));
-	corners.push_back(cv::Point2f(squares[0][0].x, squares[0][0].y));
+	if(squares.size() > 0)
+	{
+		std::vector<cv::Point2f> corners;
+		corners.push_back(cv::Point2f(squares[which_square][3].x, squares[which_square][3].y));
+		corners.push_back(cv::Point2f(squares[which_square][2].x, squares[which_square][2].y));
+		corners.push_back(cv::Point2f(squares[which_square][1].x, squares[which_square][1].y));
+		corners.push_back(cv::Point2f(squares[which_square][0].x, squares[which_square][0].y));
 
-	// Get transformation matrix
-	cv::Mat transmtx = cv::getPerspectiveTransform(corners, quad_pts);
+		//Add trackbar if more than one to choose from
+		if(squares.size() > 1)
+		{
+			cv::createTrackbar("tb_card", "Card Found", &current_square, squares.size(), on_trackbar_change);
+		}
 
-	// Apply perspective transformation
-	cv::warpPerspective(input, quad, transmtx, quad.size());
+		// Get transformation matrix
+		cv::Mat transmtx = cv::getPerspectiveTransform(corners, quad_pts);
 
-	return quad;
-	//return hough_trans(input);
+		// Apply perspective transformation
+		cv::warpPerspective(input, quad, transmtx, quad.size());
+
+		cv::imshow("Perpective Transformed Card", quad);
+
+		return quad;
+		//return hough_trans(input);
+	}
+	else
+	{
+		cout << "NO CARDS TO TRANSFORM" << endl;
+		return input;
+	}
 }

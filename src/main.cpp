@@ -56,8 +56,7 @@ int main(int argc, char **argv)
 			//cv::imshow("Input", input);
 
 			//Find card in image
-			cv::Mat temp = find_card(input);
-			cv::imshow("Temp", temp);
+			find_card(input, 0, 128);
 
 			//Make background black
 			cv::Mat working = make_background_black(input, 100);
