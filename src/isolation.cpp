@@ -23,7 +23,7 @@ static cv::Mat current_image;
  * vector<vector<Point>>& squares:   The array of squares
  *                    int threshold: Threshold for finding a quad
  */
-static void find_squares(cv::Mat image, vector<vector<cv::Point>>& squares, int threshold)
+static void find_squares(cv::Mat image, vector<vector<cv::Point> >& squares, int threshold)
 {
 	squares.clear();
 
@@ -118,7 +118,7 @@ cv::Mat find_card(cv::Mat input, int which_square, int threshold)
 	current_image = input.clone();
 	current_threshold = threshold;
 
-	vector<vector<cv::Point>> squares;
+	vector<vector<cv::Point> > squares;
 
 	find_squares(found, squares, threshold);
 
