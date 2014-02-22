@@ -27,19 +27,17 @@ static void find_squares(cv::Mat image, vector<vector<cv::Point> >& squares, int
 {
 	squares.clear();
 
-	cv::Mat timg, gray0(image.size(), CV_8U), gray;
-	cv::blur(image, timg, cv::Size(4, 4));
-	cv::cvtColor(timg, gray0, CV_BGR2GRAY);
-
-	cv::imshow("Contours", gray0);
+	cv::Mat temp, working(image.size(), CV_8U), grey;
+	cv::blur(image, temp, cv::Size(4, 4));
+	cv::cvtColor(temp, working, CV_BGR2GRAY);
 
 	vector<vector<cv::Point> > contours;
 
-	// tgray(x,y) = gray(x,y) < (l+1)*255/N ? 255 : 0
-	gray = gray0 >= threshold;
+	// tgrey(x,y) = grey(x,y) < (l+1)*255/N ? 255 : 0
+	grey = working >= threshold;
 
 	// find contours and store them all as a list
-	cv::findContours(gray, contours, cv::RETR_LIST, cv::CHAIN_APPROX_SIMPLE);
+	cv::findContours(grey, contours, cv::RETR_LIST, cv::CHAIN_APPROX_SIMPLE);
 
 	vector<cv::Point> approx;
 
