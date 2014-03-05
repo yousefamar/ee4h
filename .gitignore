@@ -21,4 +21,7 @@
 *.app
 ee4h
 
+#Combat Thumbs.db
+*.db
+
 makefile
