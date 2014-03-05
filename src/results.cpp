@@ -18,6 +18,10 @@ void Results::init()
 	detected_suit = UNKNOWN_SUIT;
 	detected_colour = UNKNOWN_COLOUR;
 	detected_value = -1;
+
+	/*stringstream title_stream;
+	title_stream << WINDOW_TITLE;
+	cv::destroyWindow(title_stream.str());*/
 }
 
 /**

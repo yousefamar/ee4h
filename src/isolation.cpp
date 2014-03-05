@@ -2,7 +2,7 @@
 | Card isolation file for EE4H Assignment						         |
 |																		 |
 | Authors: Yousef Amar and Chris Lewis									 |
-| Last Modified: 19/02/2014												 |
+| Last Modified: 05/03/2014												 |
 |																		 |
 \************************************************************************/
 
@@ -14,6 +14,13 @@ using namespace std;
 static int current_square = 0;
 static int current_threshold = 0;
 static cv::Mat current_image;
+static int number_of_squares = 0;
+
+//Configuration
+float
+	corner_h_perc = 0.15F,
+	corner_v_perc = 0.25F
+;
 
 /*
  * Find the number of squares in an image.
@@ -23,7 +30,7 @@ static cv::Mat current_image;
  * vector<vector<Point>>& squares:   The array of squares
  *                    int threshold: Threshold for finding a quad
  */
-static void find_squares(cv::Mat image, vector<vector<cv::Point> >& squares, int threshold)
+static void find_squares(cv::Mat image, vector<vector<cv::Point>>& squares, int threshold)
 {
 	squares.clear();
 
@@ -34,23 +41,23 @@ static void find_squares(cv::Mat image, vector<vector<cv::Point> >& squares, int
 	//int ch[] = {1, 0};
 	//cv::mixChannels(&image, 1, &grey8, 1, ch, 1);
 
-	cv::imshow("Grey", grey8);
+	//cv::imshow("Grey", grey8);
 
 	//cv::equalizeHist(grey8, grey8);
 	// CLAHE (Contrast Limited Adaptive Histogram Equalization)
 	// NOTE: Changing the thresh and size parameters has some interesting effects!
 	cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE(2.0, cv::Size(32, 32));
 	clahe->apply(grey8, grey8);
-	cv::imshow("Grey + Equalised Histogram", grey8);
+	//cv::imshow("Grey + Equalised Histogram", grey8);
 	
 	cv::blur(grey8, grey8, cv::Size(4, 4));
-	cv::imshow("Grey + Equalised Histogram + 4x4 Blur", grey8);
+	//cv::imshow("Grey + Equalised Histogram + 4x4 Blur", grey8);
 
-	cv::Mat grey = grey8 >= threshold;
-	cv::imshow("Grey + Equalised Histogram + 4x4 Blur + Threshold", grey);
+	cv::Mat grey = grey8 >= threshold;	//Seriously? ONE LINER!
+	//cv::imshow("Grey + Equalised Histogram + 4x4 Blur + Threshold", grey);
 
 	// find contours and store them all as a list
-	vector<vector<cv::Point> > contours;
+	vector<vector<cv::Point>> contours;
 	cv::findContours(grey, contours, cv::RETR_LIST, cv::CHAIN_APPROX_SIMPLE);
 
 	vector<cv::Point> approx;
@@ -105,7 +112,7 @@ cv::Mat hough_trans(cv::Mat input)
 	return output;
 }
 
-static void on_trackbar_change(int, void*)
+static void on_trackbar_change(int i, void *userdata)
 {
 	find_card(current_image, current_square, current_threshold);
 
@@ -124,13 +131,16 @@ static void on_trackbar_change(int, void*)
   */
 cv::Mat find_card(cv::Mat input, int which_square, int threshold)
 {
+	Results results;
+	results.init();
+
 	cv::Mat found = input.clone();
 
 	//Assign to global for use in callback
 	current_image = input.clone();
 	current_threshold = threshold;
 
-	vector<vector<cv::Point> > squares;
+	vector<vector<cv::Point>> squares;
 
 	find_squares(found, squares, threshold);
 
@@ -158,6 +168,8 @@ cv::Mat find_card(cv::Mat input, int which_square, int threshold)
 	quad_pts.push_back(cv::Point2f(quad.cols, quad.rows));
 	quad_pts.push_back(cv::Point2f(0, quad.rows));
 
+	number_of_squares = squares.size();
+
 	if(squares.size() > 0)
 	{
 		std::vector<cv::Point2f> corners;
@@ -167,9 +179,17 @@ cv::Mat find_card(cv::Mat input, int which_square, int threshold)
 		corners.push_back(cv::Point2f(squares[which_square][0].x, squares[which_square][0].y));
 
 		//Add trackbar if more than one to choose from
-		if(squares.size() > 1)
+		if(squares.size() >= 2)
 		{
-			cv::createTrackbar("tb_card", "Card Found", &current_square, squares.size(), on_trackbar_change);
+			cv::createTrackbar("tb_card", "Card Found", &current_square, squares.size() - 1, on_trackbar_change);
+		}
+		else
+		{
+			//Remove it HOW? TODO 
+			/*cv::destroyWindow("Card Found");	//Crashes
+			  cv::imshow("Card Found", found);*/
+
+			//cv::createTrackbar("tb_card", "Card Found", &current_square, squares.size() - 1, on_trackbar_change);	//Crashes
 		}
 
 		// Get transformation matrix
@@ -178,9 +198,35 @@ cv::Mat find_card(cv::Mat input, int which_square, int threshold)
 		// Apply perspective transformation
 		cv::warpPerspective(input, quad, transmtx, quad.size());
 
+		/********************** Output and detection ***********************/
+
+		cv::Size input_size = quad.size();
+
+		//Get suit colour
+		cv::Mat working = make_background_black(quad, 100);
+		working = filter_red_channel(working, 0);
+		results.detected_colour = is_red_suit_by_corners(working, corner_h_perc, corner_v_perc, 100, 2, 0.15F) == true ? Results::RED : Results::BLACK;
+
+		//Get card value
+		cv::Mat working_bin = binary_threshold(quad, 110, 0, 255);
+		cv::imshow("Binary Threshold", working_bin);
+		results.detected_value = count_blobs(working_bin) - 4;	// Count symbols, -4 for corners
+
+		//Show regions searched on output window
+		int region_width = (int) (corner_h_perc * (float) input_size.width);
+		int region_height = (int) (corner_v_perc * (float) input_size.height);
+		cv::Point start = cv::Point(0, 0);
+		cv::Point finish = cv::Point(region_width, region_height);
+		cv::rectangle(quad, start, finish, line_colour, 1, 8, 0);	//Top left
+		start = cv::Point(input_size.width - region_width, input_size.height - region_height);
+		finish = cv::Point(input_size.width, input_size.height);
+		cv::rectangle(quad, start, finish, line_colour, 1, 8, 0);	//Bottom right
 		cv::imshow("Perpective Transformed Card", quad);
 
-		return quad;
+		//Show results
+		results.show();
+
+		return working;	//NOT USED?
 		//return hough_trans(input);
 	}
 	else
