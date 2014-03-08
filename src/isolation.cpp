@@ -27,10 +27,10 @@ float
  * 
  * Arguments
  *                cv::Mat image:     The image input
- * vector<vector<Point>>& squares:   The array of squares
+ * vector<vector<Point> >& squares:   The array of squares
  *                    int threshold: Threshold for finding a quad
  */
-static void find_squares(cv::Mat image, vector<vector<cv::Point>>& squares, int threshold)
+static void find_squares(cv::Mat image, vector<vector<cv::Point> >& squares, int threshold)
 {
 	squares.clear();
 
@@ -57,7 +57,7 @@ static void find_squares(cv::Mat image, vector<vector<cv::Point>>& squares, int 
 	//cv::imshow("Grey + Equalised Histogram + 4x4 Blur + Threshold", grey);
 
 	// find contours and store them all as a list
-	vector<vector<cv::Point>> contours;
+	vector<vector<cv::Point> > contours;
 	cv::findContours(grey, contours, cv::RETR_LIST, cv::CHAIN_APPROX_SIMPLE);
 
 	vector<cv::Point> approx;
@@ -140,7 +140,7 @@ cv::Mat find_card(cv::Mat input, int which_square, int threshold)
 	current_image = input.clone();
 	current_threshold = threshold;
 
-	vector<vector<cv::Point>> squares;
+	vector<vector<cv::Point> > squares;
 
 	find_squares(found, squares, threshold);
 
