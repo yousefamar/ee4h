@@ -14,4 +14,6 @@ int max(int a, int b);
 
 int max(int a, int b, int c);
 
+int dist_manhattan(int x1, int x2, int y1, int y2);
+
 #endif

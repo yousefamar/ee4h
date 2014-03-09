@@ -62,3 +62,12 @@ int max(int a, int b, int c)
 {
 	return max(a, max(b, c));
 }
+
+/**
+  * TODO: Docs
+  */
+int dist_manhattan(int x1, int x2, int y1, int y2)
+{
+  // TODO: Check abs' speed
+  return abs(x2-x1 + y2-y1);
+}

@@ -46,7 +46,7 @@ int main(int argc, char **argv)
 			//cv::imshow("Input", input);
 
 			//Find card in image
-			find_card(input, 0, 128);
+			find_cards(input);
 
 			//Show results until key press
 			//cv::imshow("Results", working);

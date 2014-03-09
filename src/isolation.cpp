@@ -10,17 +10,27 @@
 
 using namespace std;
 
-//Globals - may be more elegant another way
-static int current_square = 0;
-static int current_threshold = 0;
-static cv::Mat current_image;
-static int number_of_squares = 0;
-
-//Configuration
+//Configuration, have as #defines instead?
 float
 	corner_h_perc = 0.15F,
 	corner_v_perc = 0.25F
 ;
+
+// NOTE: This is slight optimisation; it's unlikely that you'll be able to see any contours at low thresholds.
+int thresh_lower = 200, thresh_upper = 255, thresh_increment = 2;
+
+// The minimum difference between two contour squares (in pixels; risky) for them to be considered different contours.
+int min_square_diff = 100;
+
+/**
+ * TODO: Docs
+ */
+int square_diff(vector<cv::Point> square1, vector<cv::Point> square2) {
+	return dist_manhattan(square1[0].x, square2[0].x, square1[0].y, square2[0].y)
+			+ dist_manhattan(square1[1].x, square2[1].x, square1[1].y, square2[1].y)
+			+ dist_manhattan(square1[2].x, square2[2].x, square1[2].y, square2[2].y)
+			+ dist_manhattan(square1[3].x, square2[3].x, square1[3].y, square2[3].y);
+}
 
 /*
  * Find the number of squares in an image.
@@ -30,10 +40,8 @@ float
  * vector<vector<Point> >& squares:   The array of squares
  *                    int threshold: Threshold for finding a quad
  */
-static void find_squares(cv::Mat image, vector<vector<cv::Point> >& squares, int threshold)
+void find_squares(cv::Mat image, vector<vector<cv::Point> >& squares, int threshold)
 {
-	squares.clear();
-
 	cv::Mat grey8(image.size(), CV_8U);
 	cv::cvtColor(image, grey8, CV_BGR2GRAY);
 	
@@ -69,17 +77,25 @@ static void find_squares(cv::Mat image, vector<vector<cv::Point> >& squares, int
 		// to the contour perimeter
 		cv::approxPolyDP(cv::Mat(contours[i]), approx, cv::arcLength(cv::Mat(contours[i]), true)*0.02, true);
 
-		// square contours should have 4 vertices after approximation
-		// relatively large area (to filter out noisy contours)
-		// and be convex.
-		// Note: absolute value of an area is used because
-		// area may be positive or negative - in accordance with the
-		// contour orientation
-		if( approx.size() == 4 &&
-			fabs(cv::contourArea(cv::Mat(approx))) > 1000 &&
-			cv::isContourConvex(cv::Mat(approx)))
-		{
+		/* Contour checks:
+		 * - 4 corners
+		 * - Area larger than 1000 pixels (approx. 32*32), fabs for negative areas (contour orientation) // FIXME: Dangerous
+		 * - Convex
+		 * - Is not as large as the whole image (75% of it max)
+		 * //- Has a lot of whiteness inside (like a normal card would)
+		 * - Is too similar to the previous (same contour)
+		 * //- Is too similar to any other
+		 * //- Angle between joint edges is larger than 45° // NOTE: squares.cpp has this
+		 */
 
+		int area = fabs(cv::contourArea(cv::Mat(approx)));
+
+		if( approx.size() == 4 &&
+			area > 1000 &&
+			cv::isContourConvex(cv::Mat(approx)) &&
+			area < (image.size().width * image.size().height * 0.75F) &&
+			(squares.empty() || square_diff(squares.back(), approx) > min_square_diff))
+		{
 			squares.push_back(approx);
 		}
 	}
@@ -112,14 +128,6 @@ cv::Mat hough_trans(cv::Mat input)
 	return output;
 }
 
-static void on_trackbar_change(int i, void *userdata)
-{
-	find_card(current_image, current_square, current_threshold);
-
-	//Reset card number
-	current_square = 0;
-}
-
 /**
   * Find and perspective transform a card in an image
   *
@@ -129,20 +137,20 @@ static void on_trackbar_change(int i, void *userdata)
   * Returns
   * cv::Mat: A perspective-corrected image of a card
   */
-cv::Mat find_card(cv::Mat input, int which_square, int threshold)
+cv::Mat find_cards(cv::Mat input)
 {
-	Results results;
-	results.init();
+	vector<cv::Mat> cards;
 
 	cv::Mat found = input.clone();
-
-	//Assign to global for use in callback
-	current_image = input.clone();
-	current_threshold = threshold;
-
 	vector<vector<cv::Point> > squares;
 
-	find_squares(found, squares, threshold);
+	for (int thresh = thresh_lower; thresh < thresh_upper; thresh += thresh_increment)
+	{
+		find_squares(found, squares, thresh);
+	}
+
+	Results results;
+	results.init();
 
 	printf("%lu cards found.\n", squares.size());
 
@@ -154,9 +162,6 @@ cv::Mat find_card(cv::Mat input, int which_square, int threshold)
 	}
 
 	cv::imshow("Card Found", found);
-	
-	//Add threshold trackbar
-	cv::createTrackbar("tb_thresh", "Card Found", &current_threshold, 255, on_trackbar_change);
 
 	// Define the destination image
 	cv::Mat quad = cv::Mat::zeros(350, 250, CV_8UC3);
@@ -168,29 +173,14 @@ cv::Mat find_card(cv::Mat input, int which_square, int threshold)
 	quad_pts.push_back(cv::Point2f(quad.cols, quad.rows));
 	quad_pts.push_back(cv::Point2f(0, quad.rows));
 
-	number_of_squares = squares.size();
-
 	if(squares.size() > 0)
 	{
 		std::vector<cv::Point2f> corners;
-		corners.push_back(cv::Point2f(squares[which_square][3].x, squares[which_square][3].y));
-		corners.push_back(cv::Point2f(squares[which_square][2].x, squares[which_square][2].y));
-		corners.push_back(cv::Point2f(squares[which_square][1].x, squares[which_square][1].y));
-		corners.push_back(cv::Point2f(squares[which_square][0].x, squares[which_square][0].y));
-
-		//Add trackbar if more than one to choose from
-		if(squares.size() >= 2)
-		{
-			cv::createTrackbar("tb_card", "Card Found", &current_square, squares.size() - 1, on_trackbar_change);
-		}
-		else
-		{
-			//Remove it HOW? TODO 
-			/*cv::destroyWindow("Card Found");	//Crashes
-			  cv::imshow("Card Found", found);*/
-
-			//cv::createTrackbar("tb_card", "Card Found", &current_square, squares.size() - 1, on_trackbar_change);	//Crashes
-		}
+		// FIXME: 0 for now.
+		corners.push_back(cv::Point2f(squares[0][3].x, squares[0][3].y));
+		corners.push_back(cv::Point2f(squares[0][2].x, squares[0][2].y));
+		corners.push_back(cv::Point2f(squares[0][1].x, squares[0][1].y));
+		corners.push_back(cv::Point2f(squares[0][0].x, squares[0][0].y));
 
 		// Get transformation matrix
 		cv::Mat transmtx = cv::getPerspectiveTransform(corners, quad_pts);
