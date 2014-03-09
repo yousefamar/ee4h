@@ -19,8 +19,8 @@ float
 // NOTE: This is slight optimisation; it's unlikely that you'll be able to see any contours at low thresholds.
 int thresh_lower = 150, thresh_upper = 255, thresh_increment = 2;
 
-// The minimum difference between two contour squares (in pixels; risky) for them to be considered different contours.
-int min_square_diff = 100;
+// The minimum difference between two contour squares (factor to mean of width + height) for them to be considered different contours.
+float min_square_diff = 0.1F;
 
 /**
  * TODO: Docs
@@ -42,7 +42,9 @@ int square_diff(vector<cv::Point> square1, vector<cv::Point> square2) {
  */
 void find_squares(cv::Mat image, vector<vector<cv::Point> >& squares, int threshold)
 {
-	cv::Mat grey8(image.size(), CV_8U);
+	cv::Size image_size = image.size();
+
+	cv::Mat grey8(image_size, CV_8U);
 	cv::cvtColor(image, grey8, CV_BGR2GRAY);
 	
 	// Use other channels as the "grey" channel instead of converting to grey-scale
@@ -70,6 +72,9 @@ void find_squares(cv::Mat image, vector<vector<cv::Point> >& squares, int thresh
 
 	vector<cv::Point> approx;
 
+	bool is_duplicate_contour = false;
+	int min_square_diff_rel = (image_size.width + image_size.height) * 0.5F * min_square_diff;
+
 	// test each contour
 	for(size_t i = 0; i < contours.size(); i++)
 	{
@@ -79,27 +84,43 @@ void find_squares(cv::Mat image, vector<vector<cv::Point> >& squares, int thresh
 
 		/* Contour checks:
 		 * - 4 corners
-		 * - Area larger than 1000 pixels (approx. 32*32), fabs for negative areas (contour orientation) // FIXME: Dangerous
+		 * - Area larger than 0.04 of the image in pixels, fabs for negative areas (contour orientation)
 		 * - Convex
 		 * - Is not as large as the whole image (75% of it max)
 		 * //- Has a lot of whiteness inside (like a normal card would)
-		 * - Is too similar to the previous (same contour)
-		 * //- Is too similar to any other
+		 * - Is too similar to previous ones (same contour)
 		 * //- Angle between joint edges is larger than 45° // NOTE: squares.cpp has this
 		 */
 
 		int area = fabs(cv::contourArea(cv::Mat(approx)));
 
 		if( approx.size() == 4 &&
-			area > 1000 &&
+			area > (image_size.width * image_size.height * 0.04F) &&
 			cv::isContourConvex(cv::Mat(approx)) &&
-			area < (image.size().width * image.size().height * 0.75F) &&
-			(squares.empty() || square_diff(squares.back(), approx) > min_square_diff))
+			area < (image_size.width * image_size.height * 0.75F))
 		{
-			squares.push_back(approx);
-			//ostringstream s;
-			//s << "Thresh = " << threshold << ", Contour #" << i;
-			//cv::imshow(s.str(), grey);
+			is_duplicate_contour = false;
+			
+			if (!squares.empty())
+			{
+				// NOTE: Warning O(N) complexity on top of complexity of high-res images
+				for (size_t j = 0; j < squares.size(); ++j)
+				{
+					if (square_diff(squares[j], approx) < min_square_diff_rel)
+					{
+						is_duplicate_contour = true;
+						break;
+					}
+				}	
+			}
+			
+			if (!is_duplicate_contour)
+			{
+				squares.push_back(approx);
+				//ostringstream s;
+				//s << "Thresh = " << threshold << ", Contour #" << i;
+				//cv::imshow(s.str(), grey);
+			}
 		}
 	}
 }
