@@ -29,6 +29,14 @@ void Results::init()
   */
 void Results::show()
 {
+	//Finally
+	stringstream title_stream;
+	title_stream << WINDOW_TITLE;
+	cv::imshow(title_stream.str(), as_mat());
+}
+
+cv::Mat Results::as_mat()
+{
 	//Create canvas
 	cv::Mat canvas(window_width, window_height, CV_8UC3, cv::Scalar(255, 255, 255));
 
@@ -72,8 +80,5 @@ void Results::show()
 	val_stream << "Value: " << detected_value;
 	cv::putText(canvas, val_stream.str(), cv::Point(10, 110), CV_FONT_HERSHEY_PLAIN, 2, cv::Scalar(0, 0, 0), 1, 8, false);
 
-	//Finally
-	stringstream title_stream;
-	title_stream << WINDOW_TITLE;
-	cv::imshow(title_stream.str(), canvas);
+	return canvas;
 }

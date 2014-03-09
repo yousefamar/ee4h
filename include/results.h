@@ -41,6 +41,7 @@ public:
 	//Methods
 	void init();
 	void show();
+	cv::Mat as_mat();
 };
 
 #endif
