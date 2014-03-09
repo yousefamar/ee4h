@@ -64,6 +64,21 @@ int max(int a, int b, int c)
 }
 
 /**
+  * Min of two ints
+  * 
+  * Arguments
+  * int a: Operand 1
+  * int b: Operand 2
+  *
+  * Returns
+  * int: lesser of the two numbers
+  */
+int min(int a, int b)
+{
+  return a < b ? a : b;
+}
+
+/**
   * TODO: Docs
   */
 int dist_manhattan(int x1, int x2, int y1, int y2)

@@ -163,8 +163,6 @@ cv::Mat hough_trans(cv::Mat input)
   */
 cv::Mat find_cards(cv::Mat input)
 {
-	vector<cv::Mat> cards;
-
 	cv::Mat found = input.clone();
 	vector<vector<cv::Point> > squares;
 
@@ -173,10 +171,10 @@ cv::Mat find_cards(cv::Mat input)
 		find_squares(found, squares, thresh);
 	}
 
-	Results results;
-	results.init();
-
 	printf("%lu cards found.\n", squares.size());
+
+	if(squares.size() < 1)
+		return input;
 
 	for(size_t i = 0; i < squares.size(); i++)
 	{
@@ -185,26 +183,34 @@ cv::Mat find_cards(cv::Mat input)
 		cv::polylines(found, &p, &n, 1, true, cv::Scalar(0,255,0), 1, CV_AA);
 	}
 
-	cv::imshow("Card Found", found);
+	cv::imshow("Cards Found", found);
 
-	// Define the destination image
-	cv::Mat quad = cv::Mat::zeros(350, 250, CV_8UC3);
 
-	// Corners of the destination image
+	Results results;
+	results.init();
+
+	vector<cv::Mat> cards;
+	
 	std::vector<cv::Point2f> quad_pts;
-	quad_pts.push_back(cv::Point2f(0, 0));
-	quad_pts.push_back(cv::Point2f(quad.cols, 0));
-	quad_pts.push_back(cv::Point2f(quad.cols, quad.rows));
-	quad_pts.push_back(cv::Point2f(0, quad.rows));
+	std::vector<cv::Point2f> corners;
 
-	if(squares.size() > 0)
+	for (int i = 0; i < squares.size(); ++i)
 	{
-		std::vector<cv::Point2f> corners;
-		// FIXME: 0 for now.
-		corners.push_back(cv::Point2f(squares[0][3].x, squares[0][3].y));
-		corners.push_back(cv::Point2f(squares[0][2].x, squares[0][2].y));
-		corners.push_back(cv::Point2f(squares[0][1].x, squares[0][1].y));
-		corners.push_back(cv::Point2f(squares[0][0].x, squares[0][0].y));
+		// Define the destination image
+		cv::Mat quad = cv::Mat::zeros(350, 250, CV_8UC3);
+
+		// Corners of the destination image
+		quad_pts.clear();
+		quad_pts.push_back(cv::Point2f(0, 0));
+		quad_pts.push_back(cv::Point2f(quad.cols, 0));
+		quad_pts.push_back(cv::Point2f(quad.cols, quad.rows));
+		quad_pts.push_back(cv::Point2f(0, quad.rows));
+
+		corners.clear();
+		corners.push_back(cv::Point2f(squares[i][3].x, squares[i][3].y));
+		corners.push_back(cv::Point2f(squares[i][2].x, squares[i][2].y));
+		corners.push_back(cv::Point2f(squares[i][1].x, squares[i][1].y));
+		corners.push_back(cv::Point2f(squares[i][0].x, squares[i][0].y));
 
 		// Get transformation matrix
 		cv::Mat transmtx = cv::getPerspectiveTransform(corners, quad_pts);
@@ -235,17 +241,19 @@ cv::Mat find_cards(cv::Mat input)
 		start = cv::Point(input_size.width - region_width, input_size.height - region_height);
 		finish = cv::Point(input_size.width, input_size.height);
 		cv::rectangle(quad, start, finish, line_colour, 1, 8, 0);	//Bottom right
-		//cv::imshow("Perpective Transformed Card", quad);
 
-		//Show results
-		results.show_with_card(quad);
+		//stringstream s;
+		//s << "Perpective Transformed Card " << i;
+		//cv::imshow(s.str(), quad);
+		
+		cards.push_back(quad);
+	}
 
-		return working;	//NOT USED?
-		//return hough_trans(input);
-	}
-	else
-	{
-		cout << "NO CARDS TO TRANSFORM" << endl;
-		return input;
-	}
+	results.show_cascade(cards);
+
+	//Show results
+	//results.show_with_card(quad);
+
+	return input;
+	//return hough_trans(input);
 }
