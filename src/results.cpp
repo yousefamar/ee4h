@@ -55,7 +55,7 @@ void Results::show_with_card(cv::Mat card)
 cv::Mat Results::as_mat()
 {
 	//Create canvas
-	cv::Mat canvas(window_width, window_height, CV_8UC3, cv::Scalar(255, 255, 255));
+	cv::Mat canvas(window_height, window_width, CV_8UC3, cv::Scalar(255, 255, 255));
 
 	//Title
 	cv::putText(canvas, "Results:", cv::Point(10, 35), CV_FONT_HERSHEY_PLAIN, 3, cv::Scalar(0, 0, 0), 1, 8, false);

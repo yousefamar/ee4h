@@ -7,8 +7,8 @@
 #define RESULTS_H
 
 //Configuration
-#define window_width 200
-#define window_height 300
+#define window_width 250
+#define window_height 120
 
 #define line_colour cv::Scalar(0, 255, 0)
 #define text_colour cv::Scalar(255, 255, 0)
