@@ -45,6 +45,10 @@ int main(int argc, char **argv)
 			cout << "'" << argv[1] << "' is " << input_size.width << " by " << input_size.height << " pixels." << endl << endl;
 			//cv::imshow("Input", input);
 
+			//Hack to deal with super large, hi-res images
+			if (input_size.width > 1000)
+				cv::resize(input, input, cv::Size(1000, 1000*input_size.height/input_size.width));
+
 			//Find card in image
 			find_cards(input);
 

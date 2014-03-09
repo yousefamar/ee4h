@@ -17,7 +17,7 @@ float
 ;
 
 // NOTE: This is slight optimisation; it's unlikely that you'll be able to see any contours at low thresholds.
-int thresh_lower = 200, thresh_upper = 255, thresh_increment = 2;
+int thresh_lower = 150, thresh_upper = 255, thresh_increment = 2;
 
 // The minimum difference between two contour squares (in pixels; risky) for them to be considered different contours.
 int min_square_diff = 100;
@@ -66,7 +66,7 @@ void find_squares(cv::Mat image, vector<vector<cv::Point> >& squares, int thresh
 
 	// find contours and store them all as a list
 	vector<vector<cv::Point> > contours;
-	cv::findContours(grey, contours, cv::RETR_LIST, cv::CHAIN_APPROX_SIMPLE);
+	cv::findContours(grey.clone(), contours, cv::RETR_LIST, cv::CHAIN_APPROX_SIMPLE);
 
 	vector<cv::Point> approx;
 
@@ -97,6 +97,9 @@ void find_squares(cv::Mat image, vector<vector<cv::Point> >& squares, int thresh
 			(squares.empty() || square_diff(squares.back(), approx) > min_square_diff))
 		{
 			squares.push_back(approx);
+			//ostringstream s;
+			//s << "Thresh = " << threshold << ", Contour #" << i;
+			//cv::imshow(s.str(), grey);
 		}
 	}
 }
