@@ -10,6 +10,8 @@
 
 using namespace std;
 
+int Results::results_window_count = 0;
+
 /**
   * Initialise all the data items in the results
   */
@@ -33,6 +35,21 @@ void Results::show()
 	stringstream title_stream;
 	title_stream << WINDOW_TITLE;
 	cv::imshow(title_stream.str(), as_mat());
+}
+
+void Results::show_with_card(cv::Mat card)
+{
+	cv::Mat results_mat = as_mat();
+
+	cv::Mat final(card.rows + results_mat.rows, max(card.cols, results_mat.cols), CV_8UC3);
+
+	card.copyTo(final(cv::Rect(0, 0, card.cols, card.rows)));
+	results_mat.copyTo(final(cv::Rect(0, card.rows, results_mat.cols, results_mat.rows)));
+
+	//Finally
+	stringstream title_stream;
+	title_stream << WINDOW_TITLE << ++Results::results_window_count;
+	cv::imshow(title_stream.str(), final);
 }
 
 cv::Mat Results::as_mat()

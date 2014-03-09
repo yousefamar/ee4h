@@ -14,7 +14,7 @@
 #define text_colour cv::Scalar(255, 255, 0)
 
 //Constants
-#define WINDOW_TITLE "Processing Results";
+#define WINDOW_TITLE "Processing Results"
 
 class Results {
 public:
@@ -33,6 +33,8 @@ public:
 		UNKNOWN_COLOUR
 	};
 
+	static int results_window_count;
+
 	//Data
 	Suit detected_suit;
 	Colour detected_colour;
@@ -41,6 +43,7 @@ public:
 	//Methods
 	void init();
 	void show();
+	void show_with_card(cv::Mat card);
 	cv::Mat as_mat();
 };
 

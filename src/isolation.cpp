@@ -235,10 +235,10 @@ cv::Mat find_cards(cv::Mat input)
 		start = cv::Point(input_size.width - region_width, input_size.height - region_height);
 		finish = cv::Point(input_size.width, input_size.height);
 		cv::rectangle(quad, start, finish, line_colour, 1, 8, 0);	//Bottom right
-		cv::imshow("Perpective Transformed Card", quad);
+		//cv::imshow("Perpective Transformed Card", quad);
 
 		//Show results
-		results.show();
+		results.show_with_card(quad);
 
 		return working;	//NOT USED?
 		//return hough_trans(input);
