@@ -2,7 +2,6 @@
 | Card isolation file for EE4H Assignment						         |
 |																		 |
 | Authors: Yousef Amar and Chris Lewis									 |
-| Last Modified: 05/03/2014												 |
 |																		 |
 \************************************************************************/
 
@@ -185,7 +184,6 @@ cv::Mat find_cards(cv::Mat input)
 
 	cv::imshow("Cards Found", found);
 
-
 	Results results;
 	results.init();
 
@@ -230,7 +228,31 @@ cv::Mat find_cards(cv::Mat input)
 		//Get card value
 		cv::Mat working_bin = binary_threshold(quad, 110, 0, 255);
 		cv::imshow("Binary Threshold", working_bin);
-		results.detected_value = count_blobs(working_bin) - 4;	// Count symbols, -4 for corners
+		results.detected_value = count_blobs(working_bin) - 4;	//Count symbols, -4 for corners
+
+		//Try and find suit
+		if(i == 0)
+		{
+			int suit = find_suit(working_bin, 0.8F);
+		} //nasty hack for testing with pers1.jpg!
+		//switch(suit)
+		//{
+		//case CLUB:
+		//	results.detected_suit = Results.Suit.CLUBS;	//Make all in terms of #defined as enum can't be prototype return type!
+		//	break;
+		//case DIAMOND:
+		//	results.detected_suit = Results.Suit.DIAMONDS;	
+		//	break;
+		//case HEART:
+		//	results.detected_suit = Results.Suit.HEARTS;	
+		//	break;
+		//case SPADE:
+		//	results.detected_suit = Results.Suit.SPADES;	
+		//	break;
+		//default:
+		//	//Init'd to UNKNOWN
+		//	break;
+		//}
 
 		//Show regions searched on output window
 		int region_width = (int) (corner_h_perc * (float) input_size.width);

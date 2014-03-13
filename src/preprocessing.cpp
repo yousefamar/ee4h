@@ -180,7 +180,7 @@ cv::Mat filter_red_channel(cv::Mat input, int new_value)
   */
 bool is_red_suit_by_corners(cv::Mat input, float horiz_margin_perc, float vert_margin_perc, int base_threshold, int target_regions, float perc_red)
 {
-	bool debug_this = true;
+	bool debug_this = false;
 
 	//Get size of whole image
 	cv::Size input_size = input.size();
