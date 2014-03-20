@@ -308,7 +308,7 @@ int find_suit_scaled(cv::Mat card, float minimum_perc)
 		}
 		else
 		{
-			cout << "No winner! UNKOWN SUIT" << endl;
+			cout << "No winner! UNKNOWN SUIT" << endl;
 			return -1;
 		}
 	}

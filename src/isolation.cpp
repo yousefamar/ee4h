@@ -14,11 +14,7 @@ float
 	corner_h_perc = 0.15F,
 	corner_v_perc = 0.25F
 ;
-
-// NOTE: This is slight optimisation; it's unlikely that you'll be able to see any contours at low thresholds.
 int thresh_lower = 150, thresh_upper = 255, thresh_increment = 2;
-
-// The minimum difference between two contour squares (factor to mean of width + height) for them to be considered different contours.
 float min_square_diff = 0.1F;
 
 /**
@@ -36,75 +32,50 @@ int square_diff(vector<cv::Point> square1, vector<cv::Point> square2) {
  * 
  * Arguments
  *                cv::Mat image:     The image input
- * vector<vector<Point> >& squares:   The array of squares
+ * vector<vector<Point>>& squares:   The array of squares
  *                    int threshold: Threshold for finding a quad
  */
-void find_squares(cv::Mat image, vector<vector<cv::Point> >& squares, int threshold)
+void find_squares(cv::Mat image, vector<vector<cv::Point>>& squares, int threshold)
 {
 	cv::Size image_size = image.size();
 
 	cv::Mat grey8(image_size, CV_8U);
 	cv::cvtColor(image, grey8, CV_BGR2GRAY);
 	
-	// Use other channels as the "grey" channel instead of converting to grey-scale
-	//int ch[] = {1, 0};
-	//cv::mixChannels(&image, 1, &grey8, 1, ch, 1);
-
-	//cv::imshow("Grey", grey8);
-
-	//cv::equalizeHist(grey8, grey8);
-	// CLAHE (Contrast Limited Adaptive Histogram Equalization)
-	// NOTE: Changing the thresh and size parameters has some interesting effects!
+	//CLAHE (Contrast Limited Adaptive Histogram Equalization)
 	cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE(2.0, cv::Size(32, 32));
 	clahe->apply(grey8, grey8);
-	//cv::imshow("Grey + Equalised Histogram", grey8);
-	
 	cv::blur(grey8, grey8, cv::Size(4, 4));
-	//cv::imshow("Grey + Equalised Histogram + 4x4 Blur", grey8);
 
-	cv::Mat grey = grey8 >= threshold;	//Seriously? ONE LINER!
-	//cv::imshow("Grey + Equalised Histogram + 4x4 Blur + Threshold", grey);
+	cv::Mat grey = grey8 >= threshold;
 
-	// find contours and store them all as a list
+	//Find contours and store them all as a list
 	vector<vector<cv::Point> > contours;
 	cv::findContours(grey.clone(), contours, cv::RETR_LIST, cv::CHAIN_APPROX_SIMPLE);
 
 	vector<cv::Point> approx;
-
 	bool is_duplicate_contour = false;
 	int min_square_diff_rel = (image_size.width + image_size.height) * 0.5F * min_square_diff;
 
 	// test each contour
 	for(size_t i = 0; i < contours.size(); i++)
 	{
-		// approximate contour with accuracy proportional
-		// to the contour perimeter
+		// approximate contour
 		cv::approxPolyDP(cv::Mat(contours[i]), approx, cv::arcLength(cv::Mat(contours[i]), true)*0.02, true);
-
-		/* Contour checks:
-		 * - 4 corners
-		 * - Area larger than 0.04 of the image in pixels, fabs for negative areas (contour orientation)
-		 * - Convex
-		 * - Is not as large as the whole image (75% of it max)
-		 * //- Has a lot of whiteness inside (like a normal card would)
-		 * - Is too similar to previous ones (same contour)
-		 * //- Angle between joint edges is larger than 45° // NOTE: squares.cpp has this
-		 */
 
 		int area = fabs(cv::contourArea(cv::Mat(approx)));
 
-		if( approx.size() == 4 &&
-			area > (image_size.width * image_size.height * 0.04F) &&
-			cv::isContourConvex(cv::Mat(approx)) &&
-			area < (image_size.width * image_size.height * 0.75F))
+		if( approx.size() == 4 &&	//4 corners
+			area > (image_size.width * image_size.height * 0.04F) &&	//Area larger than 0.04 of the image in pixels
+			cv::isContourConvex(cv::Mat(approx)) &&	//Is convex
+			area < (image_size.width * image_size.height * 0.75F))	//Is not as large as the whole image (75% of it max)
 		{
-			is_duplicate_contour = false;
-			
+			is_duplicate_contour = false;	
 			if (!squares.empty())
 			{
-				// NOTE: Warning O(N) complexity on top of complexity of high-res images
 				for (size_t j = 0; j < squares.size(); ++j)
 				{
+					//Is too similar to previous ones (same contour)
 					if (square_diff(squares[j], approx) < min_square_diff_rel)
 					{
 						is_duplicate_contour = true;
@@ -113,12 +84,9 @@ void find_squares(cv::Mat image, vector<vector<cv::Point> >& squares, int thresh
 				}	
 			}
 			
-			if (!is_duplicate_contour)
+			if(!is_duplicate_contour)
 			{
 				squares.push_back(approx);
-				//ostringstream s;
-				//s << "Thresh = " << threshold << ", Contour #" << i;
-				//cv::imshow(s.str(), grey);
 			}
 		}
 	}
@@ -137,7 +105,6 @@ cv::Mat hough_trans(cv::Mat input)
 {
 	cv::Mat edges, output;
 	cv::Canny(input, edges, 50, 200, 3);
-
 	cv::cvtColor(edges, output, cv::COLOR_GRAY2BGR);
 
 	vector<cv::Vec4i> lines;
@@ -188,7 +155,6 @@ cv::Mat find_cards(cv::Mat input)
 	results.init();
 
 	vector<cv::Mat> cards;
-	
 	std::vector<cv::Point2f> quad_pts;
 	std::vector<cv::Point2f> corners;
 
@@ -231,28 +197,29 @@ cv::Mat find_cards(cv::Mat input)
 		results.detected_value = count_blobs(working_bin) - 4;	//Count symbols, -4 for corners
 
 		//Try and find suit
+		int suit;
 		if(i == 0)
 		{
-			int suit = find_suit_scaled(working_bin, 0.9F);
+			suit = find_suit_scaled(working_bin, 0.9F);
 		} //nasty hack for testing with pers1.jpg!
-		//switch(suit)
-		//{
-		//case CLUB:
-		//	results.detected_suit = Results.Suit.CLUBS;	//Make all in terms of #defined as enum can't be prototype return type!
-		//	break;
-		//case DIAMOND:
-		//	results.detected_suit = Results.Suit.DIAMONDS;	
-		//	break;
-		//case HEART:
-		//	results.detected_suit = Results.Suit.HEARTS;	
-		//	break;
-		//case SPADE:
-		//	results.detected_suit = Results.Suit.SPADES;	
-		//	break;
-		//default:
-		//	//Init'd to UNKNOWN
-		//	break;
-		//}
+		switch(suit)
+		{
+		case CLUB:
+			results.detected_suit = Results.Suit.CLUBS;	//Make all in terms of #defined as enum can't be prototype return type!
+			break;
+		case DIAMOND:
+			results.detected_suit = Results.Suit.DIAMONDS;	
+			break;
+		case HEART:
+			results.detected_suit = Results.Suit.HEARTS;	
+			break;
+		case SPADE:
+			results.detected_suit = Results.Suit.SPADES;	
+			break;
+		default:
+			//Init'd to UNKNOWN
+			break;
+		}
 
 		//Show regions searched on output window
 		int region_width = (int) (corner_h_perc * (float) input_size.width);
