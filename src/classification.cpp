@@ -244,3 +244,77 @@ int find_suit(cv::Mat card, float minimum_perc)
 		return -2;
 	}
 }
+
+int find_suit_scaled(cv::Mat card, float minimum_perc)
+{
+	if(card.channels() == 1)
+	{
+		cout << "Performing find_suit_scaled()" << endl;
+
+		//HOM all suits at all scales at both normal and flip orientations
+		int matches[4] = {0, 0, 0, 0};
+
+		//Load original SEs
+		cv::Mat se_symbols[4] = {
+			cv::imread("../../../gitsrc/res/symbols/scale_full/club.png", CV_LOAD_IMAGE_GRAYSCALE),
+			cv::imread("../../../gitsrc/res/symbols/scale_full/diamond.png", CV_LOAD_IMAGE_GRAYSCALE),
+			cv::imread("../../../gitsrc/res/symbols/scale_full/heart.png", CV_LOAD_IMAGE_GRAYSCALE),
+			cv::imread("../../../gitsrc/res/symbols/scale_full/spade.png", CV_LOAD_IMAGE_GRAYSCALE)
+		};
+
+		//Do ten scales - 1/10 to 10/10
+		for(int i = 1; i < 11; i++)
+		{
+			//For reach symbol
+			for(int j = 0; j < 4; j++)
+			{
+				//Calculate new size
+				int width = (int) round(((float)i / 10.0F) * (float)se_symbols[j].cols);
+				int height = (int) round(((float)i / 10.0F) * (float)se_symbols[j].rows);
+				cv::Size size(width, height);
+
+				//Resize SE
+				cv::Mat temp;
+				cv::resize(se_symbols[j].clone(), temp, size);
+
+				//Do match
+				cout << "Suit " << (j + 1) << "/4. Scale: " << i << "/10..." << endl;
+				matches[j] += count_blobs(hit_or_miss(card, temp, minimum_perc));
+			}
+		}
+
+		cout << "Scores (C/D/H/S): " << matches[CLUB] << "/" << matches[DIAMOND] << "/" << matches[HEART] << "/" << matches[SPADE] << endl;
+
+		//Find which suit was matched most
+		if(max(matches[CLUB], matches[DIAMOND], matches[HEART], matches[SPADE]) == matches[CLUB])
+		{
+			cout << "Suit may be CLUBS!" << endl;
+			return CLUB;
+		}
+		else if(max(matches[CLUB], matches[DIAMOND], matches[HEART], matches[SPADE]) == matches[DIAMOND])
+		{
+			cout << "Suit may be DIAMONDS!" << endl;
+			return DIAMOND;
+		}
+		else if(max(matches[CLUB], matches[DIAMOND], matches[HEART], matches[SPADE]) == matches[HEART])
+		{
+			cout << "Suit may be HEARTS!" << endl;
+			return HEART;
+		}
+		else if(max(matches[CLUB], matches[DIAMOND], matches[HEART], matches[SPADE]) == matches[SPADE])
+		{
+			cout << "Suit may be SPADES!" << endl;
+			return SPADE;
+		}
+		else
+		{
+			cout << "No winner! UNKOWN SUIT" << endl;
+			return -1;
+		}
+	}
+	else
+	{
+		cout << "Channels must be 1 for find_suit()!" << endl;
+		return -2;
+	}
+}

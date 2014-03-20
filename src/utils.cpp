@@ -111,3 +111,11 @@ bool is_in_image(int x, int y, int width, int height)
 {
 	return x > 0 && x < width && y > 0 && y < height;
 }
+
+/*
+ * Round to nearest integer
+ */
+double round(double d)
+{
+  return floor(d + 0.5);
+}

@@ -233,7 +233,7 @@ cv::Mat find_cards(cv::Mat input)
 		//Try and find suit
 		if(i == 0)
 		{
-			int suit = find_suit(working_bin, 0.8F);
+			int suit = find_suit_scaled(working_bin, 0.9F);
 		} //nasty hack for testing with pers1.jpg!
 		//switch(suit)
 		//{
