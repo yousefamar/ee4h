@@ -256,10 +256,10 @@ int find_suit_scaled(cv::Mat card, float minimum_perc)
 
 		//Load original SEs
 		cv::Mat se_symbols[4] = {
-			cv::imread("../../../gitsrc/res/symbols/scale_full/club.png", CV_LOAD_IMAGE_GRAYSCALE),
-			cv::imread("../../../gitsrc/res/symbols/scale_full/diamond.png", CV_LOAD_IMAGE_GRAYSCALE),
-			cv::imread("../../../gitsrc/res/symbols/scale_full/heart.png", CV_LOAD_IMAGE_GRAYSCALE),
-			cv::imread("../../../gitsrc/res/symbols/scale_full/spade.png", CV_LOAD_IMAGE_GRAYSCALE)
+			cv::imread("res/symbols/scale_full/club.png", CV_LOAD_IMAGE_GRAYSCALE),
+			cv::imread("res/symbols/scale_full/diamond.png", CV_LOAD_IMAGE_GRAYSCALE),
+			cv::imread("res/symbols/scale_full/heart.png", CV_LOAD_IMAGE_GRAYSCALE),
+			cv::imread("res/symbols/scale_full/spade.png", CV_LOAD_IMAGE_GRAYSCALE)
 		};
 
 		//Do ten scales - 1/10 to 10/10
