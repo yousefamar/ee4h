@@ -35,7 +35,7 @@ int square_diff(vector<cv::Point> square1, vector<cv::Point> square2) {
  * vector<vector<Point>>& squares:   The array of squares
  *                    int threshold: Threshold for finding a quad
  */
-void find_squares(cv::Mat image, vector<vector<cv::Point>>& squares, int threshold)
+void find_squares(cv::Mat image, vector<vector<cv::Point> >& squares, int threshold)
 {
 	cv::Size image_size = image.size();
 
