@@ -205,16 +205,16 @@ cv::Mat find_cards(cv::Mat input)
 		switch(suit)
 		{
 		case CLUB:
-			results.detected_suit = Results.Suit.CLUBS;	//Make all in terms of #defined as enum can't be prototype return type!
+			results.detected_suit = Results::CLUBS;	//Make all in terms of #defined as enum can't be prototype return type!
 			break;
 		case DIAMOND:
-			results.detected_suit = Results.Suit.DIAMONDS;	
+			results.detected_suit = Results::DIAMONDS;	
 			break;
 		case HEART:
-			results.detected_suit = Results.Suit.HEARTS;	
+			results.detected_suit = Results::HEARTS;	
 			break;
 		case SPADE:
-			results.detected_suit = Results.Suit.SPADES;	
+			results.detected_suit = Results::SPADES;	
 			break;
 		default:
 			//Init'd to UNKNOWN
