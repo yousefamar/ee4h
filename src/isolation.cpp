@@ -16,11 +16,44 @@ float min_square_diff = 0.1F;
 /**
  * TODO: Docs
  */
-int square_diff(vector<cv::Point> square1, vector<cv::Point> square2) {
+int square_diff(vector<cv::Point> square1, vector<cv::Point> square2)
+{
 	return dist_manhattan(square1[0].x, square2[0].x, square1[0].y, square2[0].y)
 			+ dist_manhattan(square1[1].x, square2[1].x, square1[1].y, square2[1].y)
 			+ dist_manhattan(square1[2].x, square2[2].x, square1[2].y, square2[2].y)
 			+ dist_manhattan(square1[3].x, square2[3].x, square1[3].y, square2[3].y);
+}
+
+// Credit to http://stackoverflow.com/questions/2049582/how-to-determine-a-point-in-a-triangle for the algorithm
+bool point_in_triangle(cv::Point p, cv::Point p0, cv::Point p1, cv::Point p2)
+{
+	float area = 0.5F * (-p1.y * p2.x + p0.y * (-p1.x + p2.x) + p0.x * (p1.y - p2.y) + p1.x * p2.y);
+	float sign = area < 0.0F ? -1.0F : 1.0F;
+	float s = (p0.y * p2.x - p0.x * p2.y + (p2.y - p0.y) * p.x + (p0.x - p2.x) * p.y) * sign;
+	float t = (p0.x * p1.y - p0.y * p1.x + (p0.y - p1.y) * p.x + (p1.x - p0.x) * p.y) * sign;
+
+	return s > 0.0F && t > 0.0F && (s + t) < 2.0F * area * sign;
+}
+
+bool point_in_quad(cv::Point p, vector<cv::Point> q) {
+	return point_in_triangle(p, q[0], q[1], q[2]) || point_in_triangle(p, q[2], q[3], q[0]);
+}
+
+bool quad_in_quad(vector<cv::Point> inner, vector<cv::Point> outer) {
+	//if (inner.size() != 4 || outer.size() != 4)
+	//	//ain't no quads
+
+	int vertexCount = 0;
+
+	for (int i = 0; i < 4; ++i)
+	{
+		if (point_in_quad(inner[i], outer))
+		{
+			vertexCount++;
+		}
+	}
+
+	return vertexCount == 4;
 }
 
 /*
@@ -37,11 +70,14 @@ void find_squares(cv::Mat image, vector<vector<cv::Point> >& squares, int thresh
 
 	cv::Mat grey8(image_size, CV_8U);
 	cv::cvtColor(image, grey8, CV_BGR2GRAY);
+
+	int clahe_size = (image_size.width + image_size.height)>>7;
+	//cout << clahe_size << endl;
 	
 	//CLAHE (Contrast Limited Adaptive Histogram Equalization)
 	cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE(2.0, cv::Size(32, 32));
 	clahe->apply(grey8, grey8);
-	cv::blur(grey8, grey8, cv::Size(4, 4));
+	cv::blur(grey8, grey8, cv::Size(clahe_size, clahe_size));
 
 	cv::Mat grey = grey8 >= threshold;
 
@@ -51,6 +87,7 @@ void find_squares(cv::Mat image, vector<vector<cv::Point> >& squares, int thresh
 
 	vector<cv::Point> approx;
 	bool is_duplicate_contour = false;
+	bool is_inside_another = false;
 	int min_square_diff_rel = (image_size.width + image_size.height) * 0.5F * min_square_diff;
 
 	// test each contour
@@ -66,7 +103,8 @@ void find_squares(cv::Mat image, vector<vector<cv::Point> >& squares, int thresh
 			cv::isContourConvex(cv::Mat(approx)) &&	//Is convex
 			area < (image_size.width * image_size.height * 0.75F))	//Is not as large as the whole image (75% of it max)
 		{
-			is_duplicate_contour = false;	
+			is_duplicate_contour = false;
+			is_inside_another = false;
 			if (!squares.empty())
 			{
 				for (size_t j = 0; j < squares.size(); ++j)
@@ -77,10 +115,19 @@ void find_squares(cv::Mat image, vector<vector<cv::Point> >& squares, int thresh
 						is_duplicate_contour = true;
 						break;
 					}
+					if (quad_in_quad(approx, squares[j])) {
+						is_inside_another = true;
+						break;
+					}
+					if (quad_in_quad(squares[j], approx)) {
+						squares[j] = approx;
+						is_inside_another = true;
+						break;
+					}
 				}	
 			}
 			
-			if(!is_duplicate_contour)
+			if(!is_duplicate_contour && !is_inside_another)
 			{
 				squares.push_back(approx);
 			}
