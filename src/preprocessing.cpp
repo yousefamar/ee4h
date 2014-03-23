@@ -28,10 +28,10 @@ cv::Mat binary_threshold(cv::Mat input, float threshold_value, int min, int max)
 	cv::Size input_size = input.size();
 
 	//Create output
-	cv::Mat output(input_size.height, input_size.width, CV_8UC3);
+	cv::Mat output(input_size.height, input_size.width, CV_8UC1);
 
 	//Convert to grey-scale
-	cv::cvtColor(input, output, CV_BGR2GRAY);
+//	cv::cvtColor(input, output, CV_BGR2GRAY);
 
 	//Pointers to data - fastest access method
 	uchar *in_data = (uchar*)input.data;
@@ -58,14 +58,10 @@ cv::Mat binary_threshold(cv::Mat input, float threshold_value, int min, int max)
 			if(avg > threshold_value)
 			{
 				out_data[(y)*output.step + (x)*output_channels + 0] = max;
-				out_data[(y)*output.step + (x)*output_channels + 1] = max;
-				out_data[(y)*output.step + (x)*output_channels + 2] = max;
 			}
 			else
 			{
 				out_data[(y)*output.step + (x)*output_channels + 0] = min;
-				out_data[(y)*output.step + (x)*output_channels + 1] = min;
-				out_data[(y)*output.step + (x)*output_channels + 2] = min;
 			}
 		}
 	}
@@ -174,14 +170,15 @@ cv::Mat filter_red_channel(cv::Mat input, int new_value)
   * Arguments
   * cv::Mat input:             Input card image matrix
   *   float horiz_margin_perc: Percentage of the width of the card from each edge to include
-  *   float vert_margin_perc:  Percentage of the height of the card from each edge to include
-  *     int base_threshold:    Minimum pixel value (combat black)
-  *     int target_regions:    Minimum number of red regions to classify out of 2
+  *   float  vert_margin_perc: Percentage of the height of the card from each edge to include
+  *     int    base_threshold: Minimum pixel value (combat black)
+  *     int    target_regions: Minimum number of red regions to classify out of 2
+  *   float          perc_red: Percentage of the check pixels that must be red to count as a red region
   *
   * Returns
   * bool: True if the card is detected to be a red suit card
   */
-bool is_red_suit_by_corners(cv::Mat input, float horiz_margin_perc, float vert_margin_perc, int base_threshold, int target_regions)
+bool is_red_suit_by_corners(cv::Mat input, float horiz_margin_perc, float vert_margin_perc, int base_threshold, int target_regions, float perc_red)
 {
 	bool debug_this = false;
 
@@ -243,11 +240,14 @@ bool is_red_suit_by_corners(cv::Mat input, float horiz_margin_perc, float vert_m
 		}
 
 		//Compute result
-		regions_red[i] = (red > blue && red > green);
+		float total = (float)region_width * (float) region_height;
+		float match_perc = (float) red / total;
+		regions_red[i] = (red > blue && red > green) && match_perc > perc_red;
 
 		if(debug_this == true)
 		{
 			cout << "is_suit_red_by_corners: Region " << i << " totals (RGB): " << red << ", " << green << ", " << blue << endl;
+			cout << "is_suit_red_by_corners: match_perc: " << match_perc << "/" << total << endl;
 		}
 	}
 

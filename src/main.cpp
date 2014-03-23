@@ -1,25 +1,18 @@
 /************************************************************************\
 | Main code file for the EE4H Assignment (Playing card recognition)      |
 |																		 |
-| Authors: Yousef Amar and Chris Lewis									 |
-| Last Modified: 05/02/2014												 |
+| Authors: Yousef Amar and Chris Lewis									 |											 
 |																		 |
-| Dependencies: OpenCV-2.4.2											 |
-|				- opencv_core242.dll									 |
-|				- opencv_imgproc242.dll									 |
-|				- opencv_highgui242.dll									 |
+| Dependencies: OpenCV-2.4.8											 |
+|				- opencv_core248.dll									 |
+|				- opencv_imgproc248.dll									 |
+|				- opencv_highgui248.dll									 |
 |				- tbb.dll (Built for Intel x64)							 |
 \************************************************************************/
 
 #include "../include/stdafx.h"
 
 using namespace std;
-
-//Configuration
-float
-	corner_h_perc = 0.36F,
-	corner_v_perc = 0.25F
-;
 
 /**
   * Program entry point.
@@ -47,64 +40,19 @@ int main(int argc, char **argv)
 		//Check size is greater than zero
 		if(input_size.width > 0 && input_size.height > 0)
 		{
-			//Init Results
-			Results results;
-			results.init();
-			
 			//Show image details
 			cout << "'" << argv[1] << "' is " << input_size.width << " by " << input_size.height << " pixels." << endl << endl;
-			cv::imshow("Input", input);
+			//cv::imshow("Input", input);
 
-			//Make background black
-			cv::Mat working = make_background_black(input, 100);
-			cv::imshow("Black backgound", working);
+			//Hack to deal with super large, hi-res images
+			if (input_size.width > 1000)
+				cv::resize(input, input, cv::Size(1000, 1000*input_size.height/input_size.width));
 
-			//Filter only red
-			working = filter_red_channel(working, 0);
-			cv::imshow("Red Channel", working);
-
-			//Is red suit?
-			results.detected_colour = is_red_suit_by_corners(working, corner_h_perc, corner_v_perc, 100, 2) == true ? Results::RED : Results::BLACK;
-
-			//Binary thresh
-			cv::Mat grey;
-			cv::cvtColor(input, grey, CV_BGR2GRAY);
-			cv::Mat working_bin;
-			cv::threshold(grey, working_bin, 100, 255, cv::THRESH_BINARY_INV);
-			cv::imshow("Binary Threshold", working_bin);
-			
-			//Open/close to remove small imperfections
-			cv::Mat element = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(3, 3), cv::Point(0,0));
-			cv::morphologyEx(working_bin, working, cv::MORPH_CLOSE, element);
-			cv::morphologyEx(working, working, cv::MORPH_OPEN, element);
-			cv::imshow("Morph close & open", working);
-
-			// Morphological Gradient
-			working = morph_gradient(working_bin);
-			cv::imshow("Morphological Gradient", working);
-
-			// Count symbols, -4 for corners, -1 for border
-			results.detected_value = count_blobs(working_bin) - 4 - 1;
-
-			//Show regions searched
-			int region_width = (int) (corner_h_perc * (float) input_size.width);
-			int region_height = (int) (corner_v_perc * (float) input_size.height);
-			
-			//Top left
-			cv::Point start = cv::Point(0, 0);
-			cv::Point finish = cv::Point(region_width, region_height);
-			cv::rectangle(working, start, finish, line_colour, 1, 8, 0);
-
-			//Bottom right
-			start = cv::Point(input_size.width - region_width, input_size.height - region_height);
-			finish = cv::Point(input_size.width, input_size.height);
-			cv::rectangle(working, start, finish, line_colour, 1, 8, 0);
-
-			//Show results window
-			results.show();
+			//Find card in image
+			find_cards(input);
 
 			//Show results until key press
-			cv::imshow("Results", working);
+			//cv::imshow("Results", working);
 			cv::waitKey(0);
 
 			//Finally

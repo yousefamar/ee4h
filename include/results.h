@@ -7,14 +7,14 @@
 #define RESULTS_H
 
 //Configuration
-#define window_width 200
-#define window_height 300
+#define window_width 250
+#define window_height 120
 
 #define line_colour cv::Scalar(0, 255, 0)
 #define text_colour cv::Scalar(255, 255, 0)
 
 //Constants
-#define WINDOW_TITLE "Processing Results";
+#define WINDOW_TITLE "Processing Results"
 
 class Results {
 public:
@@ -33,6 +33,8 @@ public:
 		UNKNOWN_COLOUR
 	};
 
+	static int results_window_count;
+
 	//Data
 	Suit detected_suit;
 	Colour detected_colour;
@@ -41,6 +43,10 @@ public:
 	//Methods
 	void init();
 	void show();
+	void show_with_card(cv::Mat card);
+	void show_cascade(std::vector<cv::Mat> cards);
+	cv::Mat as_mat();
+	cv::Mat as_mat_with_card(cv::Mat card);
 };
 
 #endif
