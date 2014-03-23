@@ -44,9 +44,10 @@ public:
 	void init();
 	void show();
 	void show_with_card(cv::Mat card);
-	void show_cascade(std::vector<cv::Mat> cards);
 	cv::Mat as_mat();
 	cv::Mat as_mat_with_card(cv::Mat card);
 };
+
+void show_cascade(std::vector<cv::Mat> cards, std::vector<Results> resultss);
 
 #endif

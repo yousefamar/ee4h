@@ -52,31 +52,6 @@ void Results::show_with_card(cv::Mat card)
 	cv::imshow(title_stream.str(), final);
 }
 
-/**
- * NOTE: Assumes constant dims à la GridLayout
- */
-void Results::show_cascade(vector<cv::Mat> cards)
-{
-	if (cards.size() < 1)
-		return;
-
-	// Max 8 cards per row; could put this elsewhere as a constant/define/static/global
-	int cards_per_row = 8;
-
-	for (size_t i = 0; i < cards.size(); ++i)
-		cards[i] = as_mat_with_card(cards[i]);
-
-	cv::Mat final((cards.size()/cards_per_row + 1) * cards[0].rows, min(cards.size() * cards[0].cols, cards_per_row * cards[0].cols), CV_8UC3);
-
-	for (size_t i = 0; i < cards.size(); ++i)
-		cards[i].copyTo(final(cv::Rect(cards[0].cols * (i%cards_per_row), cards[0].rows * (i/cards_per_row), cards[i].cols, cards[i].rows)));
-
-	//Finally
-	stringstream title_stream;
-	title_stream << WINDOW_TITLE;
-	cv::imshow(title_stream.str(), final);
-}
-
 cv::Mat Results::as_mat()
 {
 	//Create canvas
@@ -133,4 +108,29 @@ cv::Mat Results::as_mat_with_card(cv::Mat card)
 	results_mat.copyTo(final(cv::Rect(0, card.rows, results_mat.cols, results_mat.rows)));
 
 	return final;
+}
+
+/**
+ * NOTE: Assumes constant dims à la GridLayout
+ */
+void show_cascade(vector<cv::Mat> cards, vector<Results> resultss)
+{
+	if (cards.size() < 1 || resultss.size() < cards.size())
+		return;
+
+	// Max 8 cards per row; could put this elsewhere as a constant/define/static/global
+	int cards_per_row = 8;
+
+	for (size_t i = 0; i < cards.size(); ++i)
+		cards[i] = resultss[i].as_mat_with_card(cards[i]);
+
+	cv::Mat final((cards.size()/cards_per_row + 1) * cards[0].rows, min(cards.size() * cards[0].cols, cards_per_row * cards[0].cols), CV_8UC3);
+
+	for (size_t i = 0; i < cards.size(); ++i)
+		cards[i].copyTo(final(cv::Rect(cards[0].cols * (i%cards_per_row), cards[0].rows * (i/cards_per_row), cards[i].cols, cards[i].rows)));
+
+	//Finally
+	stringstream title_stream;
+	title_stream << WINDOW_TITLE;
+	cv::imshow(title_stream.str(), final);
 }

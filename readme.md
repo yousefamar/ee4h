@@ -24,3 +24,7 @@ void getX()
 
 - The master branch must always be stable. Only merge with the master branch if all code works. Branch to work on features or bug fixes.
 - Prefix dev branches with group names. See [here](http://stackoverflow.com/questions/273695/git-branch-naming-best-practices) for examples.
+
+## Project Design Conventions ##
+
+- The output of a function is through modifying its arguments and not by returning.

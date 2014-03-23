@@ -10,10 +10,6 @@
 using namespace std;
 
 //Configuration, have as #defines instead?
-float
-	corner_h_perc = 0.15F,
-	corner_v_perc = 0.25F
-;
 int thresh_lower = 150, thresh_upper = 255, thresh_increment = 2;
 float min_square_diff = 0.1F;
 
@@ -119,15 +115,14 @@ cv::Mat hough_trans(cv::Mat input)
 }
 
 /**
-  * Find and perspective transform a card in an image
+  * Find and perspective transform cards in an image
   *
   * Arguments
-  * cv::Mat input:		     Image matrix
+  * cv::Mat input:	Image matrix
+  * cv::Mat cards:	Output card Mats
   *
-  * Returns
-  * cv::Mat: A perspective-corrected image of a card
   */
-cv::Mat find_cards(cv::Mat input)
+void find_cards(cv::Mat input, vector<cv::Mat>* cards)
 {
 	cv::Mat found = input.clone();
 	vector<vector<cv::Point> > squares;
@@ -140,7 +135,7 @@ cv::Mat find_cards(cv::Mat input)
 	printf("%lu cards found.\n", squares.size());
 
 	if(squares.size() < 1)
-		return input;
+		throw 1;
 
 	for(size_t i = 0; i < squares.size(); i++)
 	{
@@ -151,10 +146,6 @@ cv::Mat find_cards(cv::Mat input)
 
 	cv::imshow("Cards Found", found);
 
-	Results results;
-	results.init();
-
-	vector<cv::Mat> cards;
 	std::vector<cv::Point2f> quad_pts;
 	std::vector<cv::Point2f> corners;
 
@@ -182,67 +173,10 @@ cv::Mat find_cards(cv::Mat input)
 		// Apply perspective transformation
 		cv::warpPerspective(input, quad, transmtx, quad.size());
 
-		/********************** Output and detection ***********************/
-
-		cv::Size input_size = quad.size();
-
-		//Get suit colour
-		cv::Mat working = make_background_black(quad, 100);
-		working = filter_red_channel(working, 0);
-		results.detected_colour = is_red_suit_by_corners(working, corner_h_perc, corner_v_perc, 100, 2, 0.15F) == true ? Results::RED : Results::BLACK;
-
-		//Get card value
-		cv::Mat working_bin = binary_threshold(quad, 110, 0, 255);
-		cv::imshow("Binary Threshold", working_bin);
-		results.detected_value = count_blobs(working_bin) - 4;	//Count symbols, -4 for corners
-
-		//Try and find suit
-		int suit;
-		if(i == 0)
-		{
-			suit = find_suit_scaled(working_bin, 0.9F);
-		} //nasty hack for testing with pers1.jpg!
-		switch(suit)
-		{
-		case CLUB:
-			results.detected_suit = Results::CLUBS;	//Make all in terms of #defined as enum can't be prototype return type!
-			break;
-		case DIAMOND:
-			results.detected_suit = Results::DIAMONDS;	
-			break;
-		case HEART:
-			results.detected_suit = Results::HEARTS;	
-			break;
-		case SPADE:
-			results.detected_suit = Results::SPADES;	
-			break;
-		default:
-			//Init'd to UNKNOWN
-			break;
-		}
-
-		//Show regions searched on output window
-		int region_width = (int) (corner_h_perc * (float) input_size.width);
-		int region_height = (int) (corner_v_perc * (float) input_size.height);
-		cv::Point start = cv::Point(0, 0);
-		cv::Point finish = cv::Point(region_width, region_height);
-		cv::rectangle(quad, start, finish, line_colour, 1, 8, 0);	//Top left
-		start = cv::Point(input_size.width - region_width, input_size.height - region_height);
-		finish = cv::Point(input_size.width, input_size.height);
-		cv::rectangle(quad, start, finish, line_colour, 1, 8, 0);	//Bottom right
-
 		//stringstream s;
 		//s << "Perpective Transformed Card " << i;
 		//cv::imshow(s.str(), quad);
 		
-		cards.push_back(quad);
+		cards->push_back(quad);
 	}
-
-	results.show_cascade(cards);
-
-	//Show results
-	//results.show_with_card(quad);
-
-	return input;
-	//return hough_trans(input);
 }

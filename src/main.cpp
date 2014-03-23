@@ -48,8 +48,54 @@ int main(int argc, char **argv)
 			if (input_size.width > 1000)
 				cv::resize(input, input, cv::Size(1000, 1000*input_size.height/input_size.width));
 
-			//Find card in image
-			find_cards(input);
+			//Find cards in image
+			vector<cv::Mat> cards;
+			find_cards(input, &cards);
+
+			vector<Results> resultss;
+
+			for(size_t i = 0; i < cards.size(); i++)
+			{
+				cv::Mat card = cards[i];
+
+				cv::Mat grey8(card.size(), CV_8U);
+				cv::cvtColor(card, grey8, CV_BGR2GRAY);
+				
+				//CLAHE (Contrast Limited Adaptive Histogram Equalization)
+				cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE(2.0, cv::Size(8, 8));
+				clahe->apply(grey8, grey8);
+				cv::blur(grey8, grey8, cv::Size(4, 4));
+
+				cv::Mat card_bin = grey8 >= 140;
+				
+				Results results;
+				results.init();
+
+				cv::Size card_size = card.size();
+
+				//Detect suit colour
+				find_colour(card, &results);
+
+				//Get card value
+				find_value(card_bin, &results);
+				
+				//Try and find suit
+				//find_suit_scaled(card_bin, 0.9F, &results);
+
+				//Show regions searched on output window
+				int region_width = (int) (corner_h_perc * (float) card_size.width);
+				int region_height = (int) (corner_v_perc * (float) card_size.height);
+				cv::Point start = cv::Point(0, 0);
+				cv::Point finish = cv::Point(region_width, region_height);
+				cv::rectangle(card, start, finish, line_colour, 1, 8, 0);	//Top left
+				start = cv::Point(card_size.width - region_width, card_size.height - region_height);
+				finish = cv::Point(card_size.width, card_size.height);
+				cv::rectangle(card, start, finish, line_colour, 1, 8, 0);	//Bottom right
+
+				resultss.push_back(results);
+			}
+
+			show_cascade(cards, resultss);
 
 			//Show results until key press
 			//cv::imshow("Results", working);

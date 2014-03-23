@@ -166,6 +166,20 @@ cv::Mat hit_or_miss(cv::Mat input, cv::Mat struct_elem, float minimum_perc)
 	}
 }
 
+void find_colour(cv::Mat card, Results* results)
+{
+	cv::Mat working = make_background_black(card, 100);
+	working = filter_red_channel(working, 0);
+	cv::imshow("Red Channel Filter", working);
+	results->detected_colour = is_red_suit_by_corners(working, corner_h_perc, corner_v_perc, 100, 2, 0.15F) == true ? Results::RED : Results::BLACK;
+}
+
+void find_value(cv::Mat card_bin, Results* results)
+{
+	cv::imshow("Binary Threshold", card_bin);
+	results->detected_value = count_blobs(card_bin) - 4;	//Count symbols, -4 for corners
+}
+
 int find_suit(cv::Mat card, float minimum_perc)
 {
 	if(card.channels() == 1)
@@ -245,7 +259,7 @@ int find_suit(cv::Mat card, float minimum_perc)
 	}
 }
 
-int find_suit_scaled(cv::Mat card, float minimum_perc)
+int find_suit_scaled(cv::Mat card, float minimum_perc, Results* results)
 {
 	if(card.channels() == 1)
 	{
@@ -289,21 +303,25 @@ int find_suit_scaled(cv::Mat card, float minimum_perc)
 		if(max(matches[CLUB], matches[DIAMOND], matches[HEART], matches[SPADE]) == matches[CLUB])
 		{
 			cout << "Suit may be CLUBS!" << endl;
+			results->detected_suit = Results::CLUBS;	//Make all in terms of #defined as enum can't be prototype return type!
 			return CLUB;
 		}
 		else if(max(matches[CLUB], matches[DIAMOND], matches[HEART], matches[SPADE]) == matches[DIAMOND])
 		{
 			cout << "Suit may be DIAMONDS!" << endl;
+			results->detected_suit = Results::DIAMONDS;
 			return DIAMOND;
 		}
 		else if(max(matches[CLUB], matches[DIAMOND], matches[HEART], matches[SPADE]) == matches[HEART])
 		{
 			cout << "Suit may be HEARTS!" << endl;
+			results->detected_suit = Results::HEARTS;
 			return HEART;
 		}
 		else if(max(matches[CLUB], matches[DIAMOND], matches[HEART], matches[SPADE]) == matches[SPADE])
 		{
 			cout << "Suit may be SPADES!" << endl;
+			results->detected_suit = Results::SPADES;
 			return SPADE;
 		}
 		else
