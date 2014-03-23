@@ -1,8 +1,7 @@
 /************************************************************************\
 | Main code file for the EE4H Assignment (Playing card recognition)      |
 |																		 |
-| Authors: Yousef Amar and Chris Lewis									 |
-| Last Modified: 12/02/2014												 |
+| Authors: Yousef Amar and Chris Lewis									 |											 
 |																		 |
 | Dependencies: OpenCV-2.4.8											 |
 |				- opencv_core248.dll									 |

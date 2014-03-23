@@ -64,6 +64,23 @@ int max(int a, int b, int c)
 }
 
 /**
+  *	Max of four ints
+  * 
+  * Arguments
+  * int a: Operand 1
+  * int b: Operand 2
+  * int c: Operand 3
+  * int d: Operand 4
+  *
+  * Returns
+  * int: greater of the four numbers
+  */
+int max(int a, int b, int c, int d)
+{
+	return max(max(a, max(b, c)), d);
+}
+
+/**
   * Min of two ints
   * 
   * Arguments
@@ -85,4 +102,20 @@ int dist_manhattan(int x1, int x2, int y1, int y2)
 {
   // TODO: Check abs' speed
   return abs(x2-x1 + y2-y1);
+}
+
+/*
+ * Return true if a point is in the image
+ */
+bool is_in_image(int x, int y, int width, int height)
+{
+	return x > 0 && x < width && y > 0 && y < height;
+}
+
+/*
+ * Round to nearest integer
+ */
+double round(double d)
+{
+  return floor(d + 0.5);
 }
