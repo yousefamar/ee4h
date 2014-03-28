@@ -259,6 +259,25 @@ int find_suit(cv::Mat card, float minimum_perc)
 	}
 }
 
+//GLobal access to work around thread overload limitation
+static int thread_matches[4];
+static cv::Mat thread_card;
+
+void do_match(int i, int j, cv::Mat temp, float minimum_perc)
+{
+	//Store values at instant this thread was created
+	cv::Mat card = thread_card.clone();
+	int matches[4];
+	matches[0] = thread_matches[0];
+	matches[1] = thread_matches[1];
+	matches[2] = thread_matches[2];
+	matches[3] = thread_matches[4];
+	
+	//Do work
+	cout << "Suit " << (j + 1) << "/4. Scale: " << i << "/10..." << endl;
+	matches[j] += count_blobs(hit_or_miss(card, temp, minimum_perc));
+}
+
 int find_suit_scaled(cv::Mat card, float minimum_perc, Results* results)
 {
 	if(card.channels() == 1)
@@ -276,6 +295,9 @@ int find_suit_scaled(cv::Mat card, float minimum_perc, Results* results)
 			cv::imread("res/symbols/scale_full/spade.png", CV_LOAD_IMAGE_GRAYSCALE)
 		};
 
+		//Track all threads
+		vector<thread> threads;
+
 		//Do ten scales - 1/10 to 10/10
 		for(int i = 1; i < 11; i++)
 		{
@@ -291,11 +313,24 @@ int find_suit_scaled(cv::Mat card, float minimum_perc, Results* results)
 				cv::Mat temp;
 				cv::resize(se_symbols[j].clone(), temp, size);
 
-				//Do match
-				cout << "Suit " << (j + 1) << "/4. Scale: " << i << "/10..." << endl;
-				matches[j] += count_blobs(hit_or_miss(card, temp, minimum_perc));
+				//Set global 'args'W
+				thread_matches[0] = matches[0];
+				thread_matches[1] = matches[1];
+				thread_matches[2] = matches[2];
+				thread_matches[3] = matches[4];
+
+				//Do matches
+				threads.push_back(thread(do_match, i, j, temp, minimum_perc));
 			}
 		}
+
+		//Wait for all threads to complete
+		cout << "Waiting for all worker threads to join..." << endl;
+		for(int i = 0; i < threads.size(); i++)
+		{
+			threads.at(i).join();
+		}
+		cout << "All threads complete!" << endl;
 
 		cout << "Scores (C/D/H/S): " << matches[CLUB] << "/" << matches[DIAMOND] << "/" << matches[HEART] << "/" << matches[SPADE] << endl;
 

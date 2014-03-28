@@ -172,7 +172,7 @@ cv::Mat hough_trans(cv::Mat input)
 void find_cards(cv::Mat input, vector<cv::Mat>* cards)
 {
 	cv::Mat found = input.clone();
-	vector<vector<cv::Point> > squares;
+	vector<vector<cv::Point>> squares;
 
 	for (int thresh = thresh_lower; thresh < thresh_upper; thresh += thresh_increment)
 	{
