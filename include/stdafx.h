@@ -11,7 +11,7 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 
-#include "../include/results.h"
+#include "../include/card.h"
 #include "../include/isolation.h"
 #include "../include/preprocessing.h"
 #include "../include/classification.h"
