@@ -225,6 +225,14 @@ void find_cards(cv::Mat input, vector<Card>* cards)
 		//cv::imshow(s.str(), quad);
 
 		Card card(quad);
+
+		float whiteness = cv::countNonZero(card.mat_bin) / 875.0F; // Area = 350x250 = 87500, * 100 for percentage
+
+		//printf("Whiteness in card %d: %.2f%%\n", i, whiteness);
+		
+		if (whiteness < 0.5F)
+			continue;
+		
 		cards->push_back(card);
 	}
 }
