@@ -169,7 +169,7 @@ cv::Mat hough_trans(cv::Mat input)
   * cv::Mat cards:	Output card Mats
   *
   */
-void find_cards(cv::Mat input, vector<cv::Mat>* cards)
+void find_cards(cv::Mat input, vector<Card>* cards)
 {
 	cv::Mat found = input.clone();
 	vector<vector<cv::Point> > squares;
@@ -223,7 +223,8 @@ void find_cards(cv::Mat input, vector<cv::Mat>* cards)
 		//stringstream s;
 		//s << "Perpective Transformed Card " << i;
 		//cv::imshow(s.str(), quad);
-		
-		cards->push_back(quad);
+
+		Card card(quad);
+		cards->push_back(card);
 	}
 }

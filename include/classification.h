@@ -17,9 +17,9 @@ cv::Mat canny_thresh(cv::Mat input, int low_thresh, int ratio, int kernel_size);
 cv::Mat morph_gradient(cv::Mat input);
 int count_blobs(cv::Mat input);
 cv::Mat hit_or_miss(cv::Mat input, cv::Mat struct_elem, float minimum_perc);
-void find_colour(cv::Mat card, Results* results);
-void find_value(cv::Mat card_bin, Results* results);
-int find_suit(cv::Mat card, float minimum_perc);
-int find_suit_scaled(cv::Mat card, float minimum_perc, Results* results);
+void find_colour(Card *card);
+void find_value(Card *card);
+int find_suit(Card *card, float minimum_perc);
+int find_suit_scaled(Card *card, float minimum_perc);
 
 #endif

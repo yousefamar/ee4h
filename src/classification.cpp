@@ -166,23 +166,23 @@ cv::Mat hit_or_miss(cv::Mat input, cv::Mat struct_elem, float minimum_perc)
 	}
 }
 
-void find_colour(cv::Mat card, Results* results)
+void find_colour(Card* card)
 {
-	cv::Mat working = make_background_black(card, 100);
+	cv::Mat working = make_background_black(card->mat, 100);
 	working = filter_red_channel(working, 0);
 	cv::imshow("Red Channel Filter", working);
-	results->detected_colour = is_red_suit_by_corners(working, corner_h_perc, corner_v_perc, 100, 2, 0.15F) == true ? Results::RED : Results::BLACK;
+	card->detected_colour = is_red_suit_by_corners(working, corner_h_perc, corner_v_perc, 100, 2, 0.15F) == true ? Card::RED : Card::BLACK;
 }
 
-void find_value(cv::Mat card_bin, Results* results)
+void find_value(Card* card)
 {
-	cv::imshow("Binary Threshold", card_bin);
-	results->detected_value = count_blobs(card_bin) - 4;	//Count symbols, -4 for corners
+	cv::imshow("Binary Threshold", card->mat_bin);
+	card->detected_value = count_blobs(card->mat_bin) - 4;	//Count symbols, -4 for corners
 }
 
-int find_suit(cv::Mat card, float minimum_perc)
+int find_suit(Card *card, float minimum_perc)
 {
-	if(card.channels() == 1)
+	if(card->mat.channels() == 1)
 	{
 		cout << "Performing find_suit()" << endl;
 
@@ -191,38 +191,38 @@ int find_suit(cv::Mat card, float minimum_perc)
 
 		//Full scale
 		cout << "Running full scale match...";
-		matches[CLUB] += count_blobs(hit_or_miss(card, cv::imread("res/symbols/scale_full/club.png", CV_LOAD_IMAGE_GRAYSCALE), minimum_perc));	//GS for one channel
-		matches[CLUB] += count_blobs(hit_or_miss(card, cv::imread("res/symbols/scale_full/club_flipped.png", CV_LOAD_IMAGE_GRAYSCALE), minimum_perc));
-		matches[DIAMOND] += count_blobs(hit_or_miss(card, cv::imread("res/symbols/scale_full/diamond.png", CV_LOAD_IMAGE_GRAYSCALE), minimum_perc));	
-		matches[DIAMOND] += count_blobs(hit_or_miss(card, cv::imread("res/symbols/scale_full/diamond_flipped.png", CV_LOAD_IMAGE_GRAYSCALE), minimum_perc));
-		matches[HEART] += count_blobs(hit_or_miss(card, cv::imread("res/symbols/scale_full/heart.png", CV_LOAD_IMAGE_GRAYSCALE), minimum_perc));	
-		matches[HEART] += count_blobs(hit_or_miss(card, cv::imread("res/symbols/scale_full/heart_flipped.png", CV_LOAD_IMAGE_GRAYSCALE), minimum_perc));
-		matches[SPADE] += count_blobs(hit_or_miss(card, cv::imread("res/symbols/scale_full/spade.png", CV_LOAD_IMAGE_GRAYSCALE), minimum_perc));	
-		matches[SPADE] += count_blobs(hit_or_miss(card, cv::imread("res/symbols/scale_full/spade_flipped.png", CV_LOAD_IMAGE_GRAYSCALE), minimum_perc));
+		matches[CLUB] += count_blobs(hit_or_miss(card->mat, cv::imread("res/symbols/scale_full/club.png", CV_LOAD_IMAGE_GRAYSCALE), minimum_perc));	//GS for one channel
+		matches[CLUB] += count_blobs(hit_or_miss(card->mat, cv::imread("res/symbols/scale_full/club_flipped.png", CV_LOAD_IMAGE_GRAYSCALE), minimum_perc));
+		matches[DIAMOND] += count_blobs(hit_or_miss(card->mat, cv::imread("res/symbols/scale_full/diamond.png", CV_LOAD_IMAGE_GRAYSCALE), minimum_perc));	
+		matches[DIAMOND] += count_blobs(hit_or_miss(card->mat, cv::imread("res/symbols/scale_full/diamond_flipped.png", CV_LOAD_IMAGE_GRAYSCALE), minimum_perc));
+		matches[HEART] += count_blobs(hit_or_miss(card->mat, cv::imread("res/symbols/scale_full/heart.png", CV_LOAD_IMAGE_GRAYSCALE), minimum_perc));	
+		matches[HEART] += count_blobs(hit_or_miss(card->mat, cv::imread("res/symbols/scale_full/heart_flipped.png", CV_LOAD_IMAGE_GRAYSCALE), minimum_perc));
+		matches[SPADE] += count_blobs(hit_or_miss(card->mat, cv::imread("res/symbols/scale_full/spade.png", CV_LOAD_IMAGE_GRAYSCALE), minimum_perc));	
+		matches[SPADE] += count_blobs(hit_or_miss(card->mat, cv::imread("res/symbols/scale_full/spade_flipped.png", CV_LOAD_IMAGE_GRAYSCALE), minimum_perc));
 		cout << "Scores (C/D/H/S): " << matches[CLUB] << "/" << matches[DIAMOND] << "/" << matches[HEART] << "/" << matches[SPADE] << endl;
 
 		//Half scale
 		cout << "Running half scale match...";
-		matches[CLUB] += count_blobs(hit_or_miss(card, cv::imread("res/symbols/scale_50perc/club.png", CV_LOAD_IMAGE_GRAYSCALE), minimum_perc));	//GS for one channel
-		matches[CLUB] += count_blobs(hit_or_miss(card, cv::imread("res/symbols/scale_50perc/club_flipped.png", CV_LOAD_IMAGE_GRAYSCALE), minimum_perc));
-		matches[DIAMOND] += count_blobs(hit_or_miss(card, cv::imread("res/symbols/scale_50perc/diamond.png", CV_LOAD_IMAGE_GRAYSCALE), minimum_perc));	
-		matches[DIAMOND] += count_blobs(hit_or_miss(card, cv::imread("res/symbols/scale_50perc/diamond_flipped.png", CV_LOAD_IMAGE_GRAYSCALE), minimum_perc));
-		matches[HEART] += count_blobs(hit_or_miss(card, cv::imread("res/symbols/scale_50perc/heart.png", CV_LOAD_IMAGE_GRAYSCALE), minimum_perc));	
-		matches[HEART] += count_blobs(hit_or_miss(card, cv::imread("res/symbols/scale_50perc/heart_flipped.png", CV_LOAD_IMAGE_GRAYSCALE), minimum_perc));
-		matches[SPADE] += count_blobs(hit_or_miss(card, cv::imread("res/symbols/scale_50perc/spade.png", CV_LOAD_IMAGE_GRAYSCALE), minimum_perc));	
-		matches[SPADE] += count_blobs(hit_or_miss(card, cv::imread("res/symbols/scale_50perc/spade_flipped.png", CV_LOAD_IMAGE_GRAYSCALE), minimum_perc));
+		matches[CLUB] += count_blobs(hit_or_miss(card->mat, cv::imread("res/symbols/scale_50perc/club.png", CV_LOAD_IMAGE_GRAYSCALE), minimum_perc));	//GS for one channel
+		matches[CLUB] += count_blobs(hit_or_miss(card->mat, cv::imread("res/symbols/scale_50perc/club_flipped.png", CV_LOAD_IMAGE_GRAYSCALE), minimum_perc));
+		matches[DIAMOND] += count_blobs(hit_or_miss(card->mat, cv::imread("res/symbols/scale_50perc/diamond.png", CV_LOAD_IMAGE_GRAYSCALE), minimum_perc));	
+		matches[DIAMOND] += count_blobs(hit_or_miss(card->mat, cv::imread("res/symbols/scale_50perc/diamond_flipped.png", CV_LOAD_IMAGE_GRAYSCALE), minimum_perc));
+		matches[HEART] += count_blobs(hit_or_miss(card->mat, cv::imread("res/symbols/scale_50perc/heart.png", CV_LOAD_IMAGE_GRAYSCALE), minimum_perc));	
+		matches[HEART] += count_blobs(hit_or_miss(card->mat, cv::imread("res/symbols/scale_50perc/heart_flipped.png", CV_LOAD_IMAGE_GRAYSCALE), minimum_perc));
+		matches[SPADE] += count_blobs(hit_or_miss(card->mat, cv::imread("res/symbols/scale_50perc/spade.png", CV_LOAD_IMAGE_GRAYSCALE), minimum_perc));	
+		matches[SPADE] += count_blobs(hit_or_miss(card->mat, cv::imread("res/symbols/scale_50perc/spade_flipped.png", CV_LOAD_IMAGE_GRAYSCALE), minimum_perc));
 		cout << "Scores (C/D/H/S): " << matches[CLUB] << "/" << matches[DIAMOND] << "/" << matches[HEART] << "/" << matches[SPADE] << endl;
 		
 		//30% scale
 		cout << "Running 30% scale match...";
-		matches[CLUB] += count_blobs(hit_or_miss(card, cv::imread("res/symbols/scale_30perc/club.png", CV_LOAD_IMAGE_GRAYSCALE), minimum_perc));	//GS for one channel
-		matches[CLUB] += count_blobs(hit_or_miss(card, cv::imread("res/symbols/scale_30perc/club_flipped.png", CV_LOAD_IMAGE_GRAYSCALE), minimum_perc));
-		matches[DIAMOND] += count_blobs(hit_or_miss(card, cv::imread("res/symbols/scale_30perc/diamond.png", CV_LOAD_IMAGE_GRAYSCALE), minimum_perc));	
-		matches[DIAMOND] += count_blobs(hit_or_miss(card, cv::imread("res/symbols/scale_30perc/diamond_flipped.png", CV_LOAD_IMAGE_GRAYSCALE), minimum_perc));
-		matches[HEART] += count_blobs(hit_or_miss(card, cv::imread("res/symbols/scale_30perc/heart.png", CV_LOAD_IMAGE_GRAYSCALE), minimum_perc));	
-		matches[HEART] += count_blobs(hit_or_miss(card, cv::imread("res/symbols/scale_30perc/heart_flipped.png", CV_LOAD_IMAGE_GRAYSCALE), minimum_perc));
-		matches[SPADE] += count_blobs(hit_or_miss(card, cv::imread("res/symbols/scale_30perc/spade.png", CV_LOAD_IMAGE_GRAYSCALE), minimum_perc));	
-		matches[SPADE] += count_blobs(hit_or_miss(card, cv::imread("res/symbols/scale_30perc/spade_flipped.png", CV_LOAD_IMAGE_GRAYSCALE), minimum_perc));
+		matches[CLUB] += count_blobs(hit_or_miss(card->mat, cv::imread("res/symbols/scale_30perc/club.png", CV_LOAD_IMAGE_GRAYSCALE), minimum_perc));	//GS for one channel
+		matches[CLUB] += count_blobs(hit_or_miss(card->mat, cv::imread("res/symbols/scale_30perc/club_flipped.png", CV_LOAD_IMAGE_GRAYSCALE), minimum_perc));
+		matches[DIAMOND] += count_blobs(hit_or_miss(card->mat, cv::imread("res/symbols/scale_30perc/diamond.png", CV_LOAD_IMAGE_GRAYSCALE), minimum_perc));	
+		matches[DIAMOND] += count_blobs(hit_or_miss(card->mat, cv::imread("res/symbols/scale_30perc/diamond_flipped.png", CV_LOAD_IMAGE_GRAYSCALE), minimum_perc));
+		matches[HEART] += count_blobs(hit_or_miss(card->mat, cv::imread("res/symbols/scale_30perc/heart.png", CV_LOAD_IMAGE_GRAYSCALE), minimum_perc));	
+		matches[HEART] += count_blobs(hit_or_miss(card->mat, cv::imread("res/symbols/scale_30perc/heart_flipped.png", CV_LOAD_IMAGE_GRAYSCALE), minimum_perc));
+		matches[SPADE] += count_blobs(hit_or_miss(card->mat, cv::imread("res/symbols/scale_30perc/spade.png", CV_LOAD_IMAGE_GRAYSCALE), minimum_perc));	
+		matches[SPADE] += count_blobs(hit_or_miss(card->mat, cv::imread("res/symbols/scale_30perc/spade_flipped.png", CV_LOAD_IMAGE_GRAYSCALE), minimum_perc));
 		cout << "Scores (C/D/H/S): " << matches[CLUB] << "/" << matches[DIAMOND] << "/" << matches[HEART] << "/" << matches[SPADE] << endl;
 
 		//Find which suit was matched most
@@ -259,9 +259,9 @@ int find_suit(cv::Mat card, float minimum_perc)
 	}
 }
 
-int find_suit_scaled(cv::Mat card, float minimum_perc, Results* results)
+int find_suit_scaled(Card *card, float minimum_perc)
 {
-	if(card.channels() == 1)
+	if(card->mat.channels() == 1)
 	{
 		cout << "Performing find_suit_scaled()" << endl;
 
@@ -293,7 +293,7 @@ int find_suit_scaled(cv::Mat card, float minimum_perc, Results* results)
 
 				//Do match
 				cout << "Suit " << (j + 1) << "/4. Scale: " << i << "/10..." << endl;
-				matches[j] += count_blobs(hit_or_miss(card, temp, minimum_perc));
+				matches[j] += count_blobs(hit_or_miss(card->mat, temp, minimum_perc));
 			}
 		}
 
@@ -303,25 +303,25 @@ int find_suit_scaled(cv::Mat card, float minimum_perc, Results* results)
 		if(max(matches[CLUB], matches[DIAMOND], matches[HEART], matches[SPADE]) == matches[CLUB])
 		{
 			cout << "Suit may be CLUBS!" << endl;
-			results->detected_suit = Results::CLUBS;	//Make all in terms of #defined as enum can't be prototype return type!
+			card->detected_suit = Card::CLUBS;	//Make all in terms of #defined as enum can't be prototype return type!
 			return CLUB;
 		}
 		else if(max(matches[CLUB], matches[DIAMOND], matches[HEART], matches[SPADE]) == matches[DIAMOND])
 		{
 			cout << "Suit may be DIAMONDS!" << endl;
-			results->detected_suit = Results::DIAMONDS;
+			card->detected_suit = Card::DIAMONDS;
 			return DIAMOND;
 		}
 		else if(max(matches[CLUB], matches[DIAMOND], matches[HEART], matches[SPADE]) == matches[HEART])
 		{
 			cout << "Suit may be HEARTS!" << endl;
-			results->detected_suit = Results::HEARTS;
+			card->detected_suit = Card::HEARTS;
 			return HEART;
 		}
 		else if(max(matches[CLUB], matches[DIAMOND], matches[HEART], matches[SPADE]) == matches[SPADE])
 		{
 			cout << "Suit may be SPADES!" << endl;
-			results->detected_suit = Results::SPADES;
+			card->detected_suit = Card::SPADES;
 			return SPADE;
 		}
 		else

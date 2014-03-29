@@ -4,6 +4,6 @@
 #ifndef ISOLATION_H
 #define ISOLATION_H
 
-void find_cards(cv::Mat input, std::vector<cv::Mat>* cards);
+void find_cards(cv::Mat input, std::vector<Card>* cards);
 
 #endif
