@@ -9,10 +9,6 @@
 #define HEART 2
 #define SPADE 3
 
-// TODO: Capitalise
-#define corner_h_perc 0.15F
-#define corner_v_perc 0.25F
-
 cv::Mat canny_thresh(cv::Mat input, int low_thresh, int ratio, int kernel_size);
 cv::Mat morph_gradient(cv::Mat input);
 int count_blobs(cv::Mat input);

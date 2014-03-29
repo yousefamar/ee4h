@@ -169,8 +169,6 @@ cv::Mat filter_red_channel(cv::Mat input, int new_value)
   *
   * Arguments
   * cv::Mat input:             Input card image matrix
-  *   float horiz_margin_perc: Percentage of the width of the card from each edge to include
-  *   float  vert_margin_perc: Percentage of the height of the card from each edge to include
   *     int    base_threshold: Minimum pixel value (combat black)
   *     int    target_regions: Minimum number of red regions to classify out of 2
   *   float          perc_red: Percentage of the check pixels that must be red to count as a red region
@@ -178,7 +176,7 @@ cv::Mat filter_red_channel(cv::Mat input, int new_value)
   * Returns
   * bool: True if the card is detected to be a red suit card
   */
-bool is_red_suit_by_corners(cv::Mat input, float horiz_margin_perc, float vert_margin_perc, int base_threshold, int target_regions, float perc_red)
+bool is_red_suit_by_corners(cv::Mat input, int base_threshold, int target_regions, float perc_red)
 {
 	bool debug_this = false;
 
@@ -190,13 +188,13 @@ bool is_red_suit_by_corners(cv::Mat input, float horiz_margin_perc, float vert_m
 	bool regions_red[2] = {false, false};
 
 	//Get four corner regions
-	int region_width = (int) (horiz_margin_perc * (float) input_size.width);
-	int region_height = (int) (vert_margin_perc * (float) input_size.height);
+	int region_width = Card::TOP_CORNER_RECT.width;
+	int region_height = Card::TOP_CORNER_RECT.height;
 
 	//Create region matrices, top left, bottom right...
 	cv::Mat regions[2] = {
-		input(cv::Rect(0, 0, region_width, region_height)),
-		input(cv::Rect(input_size.width - region_width, input_size.height - region_height, region_width, region_height))
+		input(Card::TOP_CORNER_RECT),
+		input(Card::BOTTOM_CORNER_RECT)
 	};
 
 	//For all regions...

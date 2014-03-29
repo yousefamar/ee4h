@@ -179,19 +179,8 @@ void find_cards(cv::Mat input, vector<Card>* cards)
 		find_squares(found, squares, thresh);
 	}
 
-	printf("%lu cards found.\n", squares.size());
-
 	if(squares.size() < 1)
 		throw 1;
-
-	for(size_t i = 0; i < squares.size(); i++)
-	{
-		const cv::Point* p = &squares[i][0];
-		int n = (int)squares[i].size();
-		cv::polylines(found, &p, &n, 1, true, cv::Scalar(0,255,0), 1, CV_AA);
-	}
-
-	cv::imshow("Cards Found", found);
 
 	std::vector<cv::Point2f> quad_pts;
 	std::vector<cv::Point2f> corners;
@@ -199,7 +188,7 @@ void find_cards(cv::Mat input, vector<Card>* cards)
 	for (int i = 0; i < squares.size(); ++i)
 	{
 		// Define the destination image
-		cv::Mat quad = cv::Mat::zeros(350, 250, CV_8UC3);
+		cv::Mat quad = cv::Mat::zeros(Card::HEIGHT, Card::WIDTH, CV_8UC3);
 
 		// Corners of the destination image
 		quad_pts.clear();
@@ -226,13 +215,35 @@ void find_cards(cv::Mat input, vector<Card>* cards)
 
 		Card card(quad);
 
-		float whiteness = cv::countNonZero(card.mat_bin) / 875.0F; // Area = 350x250 = 87500, * 100 for percentage
+		// Check whiteness of whole image
+		float whiteness = (float) cv::countNonZero(card.mat_bin) / Card::AREA;
 
-		//printf("Whiteness in card %d: %.2f%%\n", i, whiteness);
+		//printf("Whiteness in card %d: %.2f\n", i, whiteness);
 		
 		if (whiteness < 0.5F)
 			continue;
+
+		// Check whiteness of both corners
+		whiteness = ((float) cv::countNonZero(card.mat_bin(Card::TOP_CORNER_RECT)) + (float) cv::countNonZero(card.mat_bin(Card::TOP_CORNER_RECT))) / (Card::CORNER_AREA<<1);
+		
+		printf("Whiteness in card %d corners: %.2f\n", i, whiteness);
+
+		if (whiteness > 0.8F) {
+			rotate(&corners[0], &corners[1], &corners[4]);
+			cv::Mat transmtx = cv::getPerspectiveTransform(corners, quad_pts);
+			cv::warpPerspective(input, quad, transmtx, quad.size());
+			card = Card(quad);
+		}
+
+		// Draw contours
+		const cv::Point* p = &squares[i][0];
+		int n = (int)squares[i].size();
+		cv::polylines(found, &p, &n, 1, true, cv::Scalar(0,255,0), 1, CV_AA);
 		
 		cards->push_back(card);
 	}
+
+	printf("%lu cards found.\n", cards->size());
+
+	cv::imshow("Cards Found", found);
 }
