@@ -291,11 +291,15 @@ void find_symbol(Card *card) {
 				cv::floodFill(card_bin, cv::Point(x, y), cv::Scalar(1));
 
 				last_aabb = xor_crop(card_bin, clone);
+				last_aabb.x -= 2;
+				last_aabb.y -= 2;
+				last_aabb.width += 4;
+				last_aabb.height += 4;
 			}
 		}
 	}
 
-	cv::rectangle(card->mat, last_aabb, Card::LINE_COLOUR_ALT);
+	//cv::rectangle(card->mat, last_aabb, Card::LINE_COLOUR_ALT);
 	
 	card->mat_sym = card->mat(last_aabb);
 }

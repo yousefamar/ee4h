@@ -16,7 +16,7 @@ cv::Mat hit_or_miss(cv::Mat input, cv::Mat struct_elem, float minimum_perc);
 void find_colour(Card *card);
 void find_value(Card *card);
 int find_suit_scaled(Card *card, float minimum_perc, int max_scale);
-int find_suit_sym(Card *card, float minimum_perc);
+void find_suit_sym(Card *card, float minimum_perc);
 float hit_or_miss_score(cv::Mat img, cv::Mat se_image);
 
 #endif
