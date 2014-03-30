@@ -157,8 +157,8 @@ void show_cascade(vector<Card> cards)
 	if (cards.size() < 1)
 		return;
 
-	// Max 8 cards per row; could put this elsewhere as a constant/define/static/global
-	int cards_per_row = 8;
+	// Max 6 cards per row; could put this elsewhere as a constant/define/static/global
+	int cards_per_row = 6;
 
 	for (size_t i = 0; i < cards.size(); ++i)
 		cards[i].mat = cards[i].as_mat_with_results();
