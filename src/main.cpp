@@ -14,6 +14,58 @@
 
 using namespace std;
 
+int process_image(cv::Mat input)
+{
+	cv::Size input_size = input.size();
+
+	//Check size is greater than zero
+	if(input_size.width > 0 && input_size.height > 0)
+	{
+		//Show image details
+		cout << "Image is " << input_size.width << " by " << input_size.height << " pixels." << endl << endl;
+		//cv::imshow("Input", input);
+
+		//Hack to deal with super large, hi-res images
+		if (input_size.width > 1000)
+			cv::resize(input, input, cv::Size(1000, 1000*input_size.height/input_size.width));
+
+		//Find cards in image and populate cards vector
+		vector<Card> cards;
+		find_cards(input, &cards);
+
+		for(size_t i = 0; i < cards.size(); i++)
+		{
+			Card *card = &cards[i];
+
+			//Detect suit colour
+			find_colour(card);
+
+			//Get card_mat value
+			find_value(card);
+			
+			find_symbol(card);
+
+			//Show regions searched on output window
+			cv::rectangle(card->mat, Card::TOP_CORNER_RECT, Card::LINE_COLOUR);
+			cv::rectangle(card->mat, Card::BOTTOM_CORNER_RECT, Card::LINE_COLOUR);
+		}
+
+		//Show results until key press
+		show_cascade(cards);
+
+	}
+	else
+	{
+		cerr << "Image dimensions must be > 0!" << endl;
+		return -2;	//Image size zero code
+	}
+
+	//Finally
+	cout << "Processing finished successfully!" << endl;
+	return 0;	//No error code
+}
+
+
 /**
   * Program entry point.
   *
@@ -32,10 +84,24 @@ int main(int argc, char **argv)
 				 << "----------------------------------------------" << endl << endl;
 	
 	//Check image is provided
-	if(argc > 1)
+	if(argc < 1)
 	{
-		cv::Mat input;
-		if(!strcmp(argv[1], "--cam")) {
+		cout << "Arguments error. Check image path/format?" << endl;
+		return -1;	//Incorrect arguments code
+	}
+
+	cv::Mat input;
+
+	bool from_cam = !strcmp(argv[1], "--cam"), should_quit = false;
+	
+	do
+	{
+		if(!from_cam)
+		{
+			input = cv::imread(argv[1], CV_LOAD_IMAGE_COLOR);
+		}
+		else
+		{
 			cv::VideoCapture cap(CV_CAP_ANY);
 
 			if(!cap.isOpened())
@@ -43,64 +109,32 @@ int main(int argc, char **argv)
 				cerr << "Unable to access webcam" << endl;
 				return -3;	//Incorrect arguments code
 			}
-			cap >> input;
-		} else {
-			input = cv::imread(argv[1], CV_LOAD_IMAGE_COLOR);
-		}
 
-		cv::Size input_size = input.size();
+			cout << "Press space to take a photo" << endl;
 
-		//Check size is greater than zero
-		if(input_size.width > 0 && input_size.height > 0)
-		{
-			//Show image details
-			cout << "'" << argv[1] << "' is " << input_size.width << " by " << input_size.height << " pixels." << endl << endl;
-			//cv::imshow("Input", input);
-
-			//Hack to deal with super large, hi-res images
-			if (input_size.width > 1000)
-				cv::resize(input, input, cv::Size(1000, 1000*input_size.height/input_size.width));
-
-			//Find cards in image and populate cards vector
-			vector<Card> cards;
-			find_cards(input, &cards);
-
-			for(size_t i = 0; i < cards.size(); i++)
+			char key;
+			do
 			{
-				Card *card = &cards[i];
+				key = cvWaitKey(10);
 
-				//Detect suit colour
-				find_colour(card);
+				cap >> input;
 
-				//Get card_mat value
-				find_value(card);
-				
-				find_symbol(card);
+				cv::imshow("Webcam", input);
 
-				//Show regions searched on output window
-				cv::rectangle(card->mat, Card::TOP_CORNER_RECT, Card::LINE_COLOUR);
-				cv::rectangle(card->mat, Card::BOTTOM_CORNER_RECT, Card::LINE_COLOUR);
-			}
+				// Break out of loop if Space key is pressed
+			} while (char(key) != 32);
 
-			show_cascade(cards);
-
-			//Show results until key press
-			//cv::imshow("Results", working);
-			cv::waitKey(0);
-
-			//Finally
-			cout << "Processing finished successfully!" << endl;
-			return 0;	//No error code
+			cv::destroyWindow("Webcam");
 		}
-		else
-		{
-			cout << "Image dimensions must be > 0!" << endl;
-			return -2;	//Image size zero code
-		}
-	}
-	else
-	{
-		cout << "Arguments error. Check image path/format?" << endl;
-		return -1;	//Incorrect arguments code
-	}
+
+		if (process_image(input))
+			return EXIT_FAILURE;
+
+		cout << "Press " << (from_cam?"Esc":"any key") << " to quit" << endl;
+
+		should_quit = (from_cam && cv::waitKey(0)==27) || (!from_cam && cv::waitKey(0));
+
+	} while(!should_quit);
+
+	return EXIT_SUCCESS;
 }
