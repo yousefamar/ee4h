@@ -115,6 +115,13 @@ void find_squares(cv::Mat image, vector<vector<cv::Point> >& squares, int thresh
 						is_duplicate_contour = true;
 						break;
 					}
+					vector<cv::Point> square = squares[j];
+					rotate(&square[0], &square[1], &square[4]);
+					if (square_diff(square, approx) < min_square_diff_rel)
+					{
+						is_duplicate_contour = true;
+						break;
+					}
 					if (quad_in_quad(approx, squares[j])) {
 						is_inside_another = true;
 						break;
