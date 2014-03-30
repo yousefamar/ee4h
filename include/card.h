@@ -43,6 +43,7 @@ public:
 	Suit detected_suit;
 	Colour detected_colour;
 	int detected_value;
+	bool is_picture_card;
 
 	//Constructor declarations
 	Card();

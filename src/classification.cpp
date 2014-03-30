@@ -166,7 +166,7 @@ cv::Mat hit_or_miss(cv::Mat input, cv::Mat struct_elem, float minimum_perc)
 	}
 }
 
-void find_colour(Card* card)
+void detect_colour(Card *card)
 {
 	cv::Mat working = make_background_black(card->mat, 100);
 	working = filter_red_channel(working, 0);
@@ -174,7 +174,31 @@ void find_colour(Card* card)
 	card->detected_colour = is_red_suit_by_corners(working, 100, 2, 0.15F) == true ? Card::RED : Card::BLACK;
 }
 
-void find_value(Card* card)
+void detect_type(Card *card)
+{
+	vector<vector<cv::Point> > squares;
+
+	int thresh_lower = 150, thresh_upper = 255, thresh_increment = 2;
+
+	for (int thresh = thresh_lower; thresh < thresh_upper; thresh += thresh_increment)
+	{
+		find_squares(card->mat, squares, thresh);
+	}
+
+	if (squares.size() != 1)
+	{
+		card->is_picture_card = false;
+		return;
+	}
+
+	card->is_picture_card = true;
+
+	const cv::Point* p = &squares[0][0];
+	int n = (int)squares[0].size();
+	cv::fillPoly(card->mat_bin, &p, &n, 1, cv::Scalar(255, 255, 255));
+}
+
+void detect_value(Card *card)
 {
 	cv::imshow("Binary Threshold", card->mat_bin);
 

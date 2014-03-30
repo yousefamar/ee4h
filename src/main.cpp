@@ -28,6 +28,8 @@ int process_image(cv::Mat input)
 		//Hack to deal with super large, hi-res images
 		if (input_size.width > 1000)
 			cv::resize(input, input, cv::Size(1000, 1000*input_size.height/input_size.width));
+		if (input_size.height > 500)
+			cv::resize(input, input, cv::Size(500*input_size.width/input_size.height, 500));
 
 		//Find cards in image and populate cards vector
 		vector<Card> cards;
@@ -41,10 +43,13 @@ int process_image(cv::Mat input)
 			Card *card = &cards[i];
 
 			//Detect suit colour
-			find_colour(card);
+			detect_colour(card);
+
+			//Detect suit type (number/picture)
+			detect_type(card);
 
 			//Get card_mat value
-			find_value(card);
+			detect_value(card);
 			
 			//Find symbol
 			find_symbol(card);

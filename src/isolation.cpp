@@ -235,11 +235,13 @@ int find_cards(cv::Mat input, vector<Card>* cards)
 			cv::Mat transmtx = cv::getPerspectiveTransform(corners, quad_pts);
 			cv::warpPerspective(input, quad_rot, transmtx, quad.size());
 
-			Card card_rot(quad);
+			Card card_rot(quad_rot);
 
 			// Compare against old corner whiteness
-			if (whiteness >= ((float) cv::countNonZero(card_rot.mat_bin(Card::TOP_CORNER_RECT)) + (float) cv::countNonZero(card_rot.mat_bin(Card::BOTTOM_CORNER_RECT))) / (Card::CORNER_AREA<<1))
+			if (whiteness >= ((float) cv::countNonZero(card_rot.mat_bin(Card::TOP_CORNER_RECT)) + (float) cv::countNonZero(card_rot.mat_bin(Card::BOTTOM_CORNER_RECT))) / (Card::CORNER_AREA<<1)) {
+				printf("Card %d orientation correction overridden due to new corners being whiter\n", i);
 				card = card_rot;
+			}
 		}
 
 		// Draw contours
