@@ -10,21 +10,50 @@
 using namespace std;
 
 //Configuration, have as #defines instead?
-float
-	corner_h_perc = 0.15F,
-	corner_v_perc = 0.25F
-;
 int thresh_lower = 150, thresh_upper = 255, thresh_increment = 2;
 float min_square_diff = 0.1F;
 
 /**
  * TODO: Docs
  */
-int square_diff(vector<cv::Point> square1, vector<cv::Point> square2) {
+int square_diff(vector<cv::Point> square1, vector<cv::Point> square2)
+{
 	return dist_manhattan(square1[0].x, square2[0].x, square1[0].y, square2[0].y)
 			+ dist_manhattan(square1[1].x, square2[1].x, square1[1].y, square2[1].y)
 			+ dist_manhattan(square1[2].x, square2[2].x, square1[2].y, square2[2].y)
 			+ dist_manhattan(square1[3].x, square2[3].x, square1[3].y, square2[3].y);
+}
+
+// Credit to http://stackoverflow.com/questions/2049582/how-to-determine-a-point-in-a-triangle for the algorithm
+bool point_in_triangle(cv::Point p, cv::Point p0, cv::Point p1, cv::Point p2)
+{
+	float area = 0.5F * (-p1.y * p2.x + p0.y * (-p1.x + p2.x) + p0.x * (p1.y - p2.y) + p1.x * p2.y);
+	float sign = area < 0.0F ? -1.0F : 1.0F;
+	float s = (p0.y * p2.x - p0.x * p2.y + (p2.y - p0.y) * p.x + (p0.x - p2.x) * p.y) * sign;
+	float t = (p0.x * p1.y - p0.y * p1.x + (p0.y - p1.y) * p.x + (p1.x - p0.x) * p.y) * sign;
+
+	return s > 0.0F && t > 0.0F && (s + t) < 2.0F * area * sign;
+}
+
+bool point_in_quad(cv::Point p, vector<cv::Point> q) {
+	return point_in_triangle(p, q[0], q[1], q[2]) || point_in_triangle(p, q[2], q[3], q[0]);
+}
+
+bool quad_in_quad(vector<cv::Point> inner, vector<cv::Point> outer) {
+	//if (inner.size() != 4 || outer.size() != 4)
+	//	//ain't no quads
+
+	int vertexCount = 0;
+
+	for (int i = 0; i < 4; ++i)
+	{
+		if (point_in_quad(inner[i], outer))
+		{
+			vertexCount++;
+		}
+	}
+
+	return vertexCount == 4;
 }
 
 /*
@@ -35,17 +64,20 @@ int square_diff(vector<cv::Point> square1, vector<cv::Point> square2) {
  * vector<vector<Point>>& squares:   The array of squares
  *                    int threshold: Threshold for finding a quad
  */
-void find_squares(cv::Mat image, vector<vector<cv::Point>>& squares, int threshold)
+void find_squares(cv::Mat image, vector<vector<cv::Point> >& squares, int threshold)
 {
 	cv::Size image_size = image.size();
 
 	cv::Mat grey8(image_size, CV_8U);
 	cv::cvtColor(image, grey8, CV_BGR2GRAY);
+
+	int clahe_size = (image_size.width + image_size.height)>>7;
+	//cout << clahe_size << endl;
 	
 	//CLAHE (Contrast Limited Adaptive Histogram Equalization)
 	cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE(2.0, cv::Size(32, 32));
 	clahe->apply(grey8, grey8);
-	cv::blur(grey8, grey8, cv::Size(4, 4));
+	cv::blur(grey8, grey8, cv::Size(clahe_size, clahe_size));
 
 	cv::Mat grey = grey8 >= threshold;
 
@@ -55,6 +87,7 @@ void find_squares(cv::Mat image, vector<vector<cv::Point>>& squares, int thresho
 
 	vector<cv::Point> approx;
 	bool is_duplicate_contour = false;
+	bool is_inside_another = false;
 	int min_square_diff_rel = (image_size.width + image_size.height) * 0.5F * min_square_diff;
 
 	// test each contour
@@ -70,7 +103,8 @@ void find_squares(cv::Mat image, vector<vector<cv::Point>>& squares, int thresho
 			cv::isContourConvex(cv::Mat(approx)) &&	//Is convex
 			area < (image_size.width * image_size.height * 0.75F))	//Is not as large as the whole image (75% of it max)
 		{
-			is_duplicate_contour = false;	
+			is_duplicate_contour = false;
+			is_inside_another = false;
 			if (!squares.empty())
 			{
 				for (size_t j = 0; j < squares.size(); ++j)
@@ -81,10 +115,19 @@ void find_squares(cv::Mat image, vector<vector<cv::Point>>& squares, int thresho
 						is_duplicate_contour = true;
 						break;
 					}
+					if (quad_in_quad(approx, squares[j])) {
+						is_inside_another = true;
+						break;
+					}
+					if (quad_in_quad(squares[j], approx)) {
+						squares[j] = approx;
+						is_inside_another = true;
+						break;
+					}
 				}	
 			}
 			
-			if(!is_duplicate_contour)
+			if(!is_duplicate_contour && !is_inside_another)
 			{
 				squares.push_back(approx);
 			}
@@ -119,15 +162,14 @@ cv::Mat hough_trans(cv::Mat input)
 }
 
 /**
-  * Find and perspective transform a card in an image
+  * Find and perspective transform cards in an image
   *
   * Arguments
-  * cv::Mat input:		     Image matrix
+  * cv::Mat input:	Image matrix
+  * cv::Mat cards:	Output card Mats
   *
-  * Returns
-  * cv::Mat: A perspective-corrected image of a card
   */
-cv::Mat find_cards(cv::Mat input)
+void find_cards(cv::Mat input, vector<Card>* cards)
 {
 	cv::Mat found = input.clone();
 	vector<vector<cv::Point> > squares;
@@ -140,7 +182,7 @@ cv::Mat find_cards(cv::Mat input)
 	printf("%lu cards found.\n", squares.size());
 
 	if(squares.size() < 1)
-		return input;
+		throw 1;
 
 	for(size_t i = 0; i < squares.size(); i++)
 	{
@@ -151,10 +193,6 @@ cv::Mat find_cards(cv::Mat input)
 
 	cv::imshow("Cards Found", found);
 
-	Results results;
-	results.init();
-
-	vector<cv::Mat> cards;
 	std::vector<cv::Point2f> quad_pts;
 	std::vector<cv::Point2f> corners;
 
@@ -182,67 +220,11 @@ cv::Mat find_cards(cv::Mat input)
 		// Apply perspective transformation
 		cv::warpPerspective(input, quad, transmtx, quad.size());
 
-		/********************** Output and detection ***********************/
-
-		cv::Size input_size = quad.size();
-
-		//Get suit colour
-		cv::Mat working = make_background_black(quad, 100);
-		working = filter_red_channel(working, 0);
-		results.detected_colour = is_red_suit_by_corners(working, corner_h_perc, corner_v_perc, 100, 2, 0.15F) == true ? Results::RED : Results::BLACK;
-
-		//Get card value
-		cv::Mat working_bin = binary_threshold(quad, 110, 0, 255);
-		cv::imshow("Binary Threshold", working_bin);
-		results.detected_value = count_blobs(working_bin) - 4;	//Count symbols, -4 for corners
-
-		//Try and find suit
-		int suit;
-		if(i == 0)
-		{
-			suit = find_suit_scaled(working_bin, 0.9F);
-		} //nasty hack for testing with pers1.jpg!
-		switch(suit)
-		{
-		case CLUB:
-			results.detected_suit = Results.Suit.CLUBS;	//Make all in terms of #defined as enum can't be prototype return type!
-			break;
-		case DIAMOND:
-			results.detected_suit = Results.Suit.DIAMONDS;	
-			break;
-		case HEART:
-			results.detected_suit = Results.Suit.HEARTS;	
-			break;
-		case SPADE:
-			results.detected_suit = Results.Suit.SPADES;	
-			break;
-		default:
-			//Init'd to UNKNOWN
-			break;
-		}
-
-		//Show regions searched on output window
-		int region_width = (int) (corner_h_perc * (float) input_size.width);
-		int region_height = (int) (corner_v_perc * (float) input_size.height);
-		cv::Point start = cv::Point(0, 0);
-		cv::Point finish = cv::Point(region_width, region_height);
-		cv::rectangle(quad, start, finish, line_colour, 1, 8, 0);	//Top left
-		start = cv::Point(input_size.width - region_width, input_size.height - region_height);
-		finish = cv::Point(input_size.width, input_size.height);
-		cv::rectangle(quad, start, finish, line_colour, 1, 8, 0);	//Bottom right
-
 		//stringstream s;
 		//s << "Perpective Transformed Card " << i;
 		//cv::imshow(s.str(), quad);
-		
-		cards.push_back(quad);
+
+		Card card(quad);
+		cards->push_back(card);
 	}
-
-	results.show_cascade(cards);
-
-	//Show results
-	//results.show_with_card(quad);
-
-	return input;
-	//return hough_trans(input);
 }

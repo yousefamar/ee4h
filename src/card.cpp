@@ -1,5 +1,5 @@
 /************************************************************************\
-| Results file for EE4H Assignment										 |
+| Card file for EE4H Assignment										 |
 |																		 |
 | Authors: Yousef Amar and Chris Lewis									 |
 | Last Modified: 05/02/2014												 |
@@ -10,12 +10,12 @@
 
 using namespace std;
 
-int Results::results_window_count = 0;
+int Card::card_window_count = 0;
 
 /**
   * Initialise all the data items in the results
   */
-void Results::init()
+Card::Card()
 {
 	detected_suit = UNKNOWN_SUIT;
 	detected_colour = UNKNOWN_COLOUR;
@@ -26,20 +26,43 @@ void Results::init()
 	cv::destroyWindow(title_stream.str());*/
 }
 
+Card::Card(cv::Mat mat)
+{
+	Card();
+	set_mat(mat);
+}
+
+void Card::set_mat(cv::Mat mat)
+{
+	this->mat = mat;
+
+	// Convert card mat to grey
+	mat_clahe = cv::Mat(mat.size(), CV_8U);
+	cv::cvtColor(mat, mat_clahe, CV_BGR2GRAY);
+
+	
+	//CLAHE (Contrast Limited Adaptive Histogram Equalization)
+	cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE(2.0, cv::Size(8, 8));
+	clahe->apply(mat_clahe, mat_clahe);
+	cv::blur(mat_clahe, mat_clahe, cv::Size(4, 4));
+
+	mat_bin = mat_clahe >= 140;
+}
+
 /**
   * Show the results data
   */
-void Results::show()
+void Card::show()
 {
 	//Finally
 	stringstream title_stream;
 	title_stream << WINDOW_TITLE;
-	cv::imshow(title_stream.str(), as_mat());
+	cv::imshow(title_stream.str(), results_to_mat());
 }
 
-void Results::show_with_card(cv::Mat card)
+void Card::show_with_card(cv::Mat card)
 {
-	cv::Mat results_mat = as_mat();
+	cv::Mat results_mat = results_to_mat();
 
 	cv::Mat final(card.rows + results_mat.rows, max(card.cols, results_mat.cols), CV_8UC3);
 
@@ -48,36 +71,11 @@ void Results::show_with_card(cv::Mat card)
 
 	//Finally
 	stringstream title_stream;
-	title_stream << WINDOW_TITLE << ++Results::results_window_count;
+	title_stream << WINDOW_TITLE << ++Card::card_window_count;
 	cv::imshow(title_stream.str(), final);
 }
 
-/**
- * NOTE: Assumes constant dims à la GridLayout
- */
-void Results::show_cascade(vector<cv::Mat> cards)
-{
-	if (cards.size() < 1)
-		return;
-
-	// Max 8 cards per row; could put this elsewhere as a constant/define/static/global
-	int cards_per_row = 8;
-
-	for (size_t i = 0; i < cards.size(); ++i)
-		cards[i] = as_mat_with_card(cards[i]);
-
-	cv::Mat final((cards.size()/cards_per_row + 1) * cards[0].rows, min(cards.size() * cards[0].cols, cards_per_row * cards[0].cols), CV_8UC3);
-
-	for (size_t i = 0; i < cards.size(); ++i)
-		cards[i].copyTo(final(cv::Rect(cards[0].cols * (i%cards_per_row), cards[0].rows * (i/cards_per_row), cards[i].cols, cards[i].rows)));
-
-	//Finally
-	stringstream title_stream;
-	title_stream << WINDOW_TITLE;
-	cv::imshow(title_stream.str(), final);
-}
-
-cv::Mat Results::as_mat()
+cv::Mat Card::results_to_mat()
 {
 	//Create canvas
 	cv::Mat canvas(window_height, window_width, CV_8UC3, cv::Scalar(255, 255, 255));
@@ -125,12 +123,37 @@ cv::Mat Results::as_mat()
 	return canvas;
 }
 
-cv::Mat Results::as_mat_with_card(cv::Mat card)
+cv::Mat Card::as_mat_with_results()
 {
-	cv::Mat results_mat = as_mat();
-	cv::Mat final(card.rows + results_mat.rows, max(card.cols, results_mat.cols), CV_8UC3);
-	card.copyTo(final(cv::Rect(0, 0, card.cols, card.rows)));
-	results_mat.copyTo(final(cv::Rect(0, card.rows, results_mat.cols, results_mat.rows)));
+	cv::Mat results_mat = results_to_mat();
+	cv::Mat final(mat.rows + results_mat.rows, max(mat.cols, results_mat.cols), CV_8UC3);
+	mat.copyTo(final(cv::Rect(0, 0, mat.cols, mat.rows)));
+	results_mat.copyTo(final(cv::Rect(0, mat.rows, results_mat.cols, results_mat.rows)));
 
 	return final;
+}
+
+/**
+ * NOTE: Assumes constant dims à la GridLayout
+ */
+void show_cascade(vector<Card> cards)
+{
+	if (cards.size() < 1)
+		return;
+
+	// Max 8 cards per row; could put this elsewhere as a constant/define/static/global
+	int cards_per_row = 8;
+
+	for (size_t i = 0; i < cards.size(); ++i)
+		cards[i].mat = cards[i].as_mat_with_results();
+
+	cv::Mat final((cards.size()/cards_per_row + 1) * cards[0].mat.rows, min(cards.size() * cards[0].mat.cols, cards_per_row * cards[0].mat.cols), CV_8UC3);
+
+	for (size_t i = 0; i < cards.size(); ++i)
+		cards[i].mat.copyTo(final(cv::Rect(cards[0].mat.cols * (i%cards_per_row), cards[0].mat.rows * (i/cards_per_row), cards[i].mat.cols, cards[i].mat.rows)));
+
+	//Finally
+	stringstream title_stream;
+	title_stream << WINDOW_TITLE;
+	cv::imshow(title_stream.str(), final);
 }

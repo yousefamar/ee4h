@@ -1,10 +1,10 @@
-//Results file to show output that can be global
+//Card file to show output that can be global
 
 #include "../include/stdafx.h"
 
 //Include guard
-#ifndef RESULTS_H
-#define RESULTS_H
+#ifndef CARD_H
+#define CARD_H
 
 //Configuration
 #define window_width 250
@@ -14,9 +14,9 @@
 #define text_colour cv::Scalar(255, 255, 0)
 
 //Constants
-#define WINDOW_TITLE "Processing Results"
+#define WINDOW_TITLE "Processing Card"
 
-class Results {
+class Card {
 public:
 	//Constants - Maybe not the best place
 	enum Suit {
@@ -33,20 +33,27 @@ public:
 		UNKNOWN_COLOUR
 	};
 
-	static int results_window_count;
+	static int card_window_count;
 
 	//Data
+	cv::Mat mat, mat_clahe, mat_bin;
 	Suit detected_suit;
 	Colour detected_colour;
 	int detected_value;
 
+	//Constructor declarations
+	Card();
+	Card(cv::Mat);
+
 	//Methods
+	void set_mat(cv::Mat mat);
 	void init();
 	void show();
 	void show_with_card(cv::Mat card);
-	void show_cascade(std::vector<cv::Mat> cards);
-	cv::Mat as_mat();
-	cv::Mat as_mat_with_card(cv::Mat card);
+	cv::Mat results_to_mat();
+	cv::Mat as_mat_with_results();
 };
+
+void show_cascade(std::vector<Card> cards);
 
 #endif

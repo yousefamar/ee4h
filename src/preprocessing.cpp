@@ -326,3 +326,38 @@ bool is_red_suit(cv::Mat input, int base_threshold)
 	//Compute result
 	return (red > blue && red > green);
 }
+
+/**
+  * Equalise the intensity of a colour image
+  * Adapted from: http://stackoverflow.com/a/15009815
+  *
+  * Arguments
+  * cv::Mat input: The input image to equalise
+  *
+  * Returns cv::Mat: The equalised BGR image
+  */
+cv::Mat colour_equalise(cv::Mat input)
+{
+	if(input.channels() != 3)
+	{
+		cerr << "Input must have 3 channels." << endl;
+		return input;
+	}
+	//Convert to other space
+	cv::Mat temp;
+	cv::cvtColor(input, temp, CV_BGR2YCrCb);
+
+	//Split
+	vector<cv::Mat> channels;
+	cv::split(temp, channels);
+
+	//Equalise intensity channel
+	cv::equalizeHist(channels[0], channels[0]);
+
+	//Re-combine
+	cv::Mat output;
+	cv::merge(channels, temp);
+	cv::cvtColor(temp, output, CV_YCrCb2BGR);
+
+	return output;
+}
