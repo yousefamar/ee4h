@@ -34,7 +34,20 @@ int main(int argc, char **argv)
 	//Check image is provided
 	if(argc > 1)
 	{
-		cv::Mat input = cv::imread(argv[1], CV_LOAD_IMAGE_COLOR);
+		cv::Mat input;
+		if(!strcmp(argv[1], "--cam")) {
+			cv::VideoCapture cap(CV_CAP_ANY);
+
+			if(!cap.isOpened())
+			{
+				cerr << "Unable to access webcam" << endl;
+				return -3;	//Incorrect arguments code
+			}
+			cap >> input;
+		} else {
+			input = cv::imread(argv[1], CV_LOAD_IMAGE_COLOR);
+		}
+
 		cv::Size input_size = input.size();
 
 		//Check size is greater than zero
