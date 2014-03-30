@@ -62,19 +62,9 @@ int main(int argc, char **argv)
 				//Get card_mat value
 				find_value(card);
 				
-				//Try and find suit
-				//find_suit_scaled(card_bin, 0.9F, &card_mat);
-				cv::Size card_size = card->mat.size();
-
 				//Show regions searched on output window
-				int region_width = (int) (corner_h_perc * (float) card_size.width);
-				int region_height = (int) (corner_v_perc * (float) card_size.height);
-				cv::Point start = cv::Point(0, 0);
-				cv::Point finish = cv::Point(region_width, region_height);
-				cv::rectangle(card->mat, start, finish, line_colour, 1, 8, 0);	//Top left
-				start = cv::Point(card_size.width - region_width, card_size.height - region_height);
-				finish = cv::Point(card_size.width, card_size.height);
-				cv::rectangle(card->mat, start, finish, line_colour, 1, 8, 0);	//Bottom right
+				cv::rectangle(card->mat, Card::TOP_CORNER_RECT, Card::LINE_COLOUR);
+				cv::rectangle(card->mat, Card::BOTTOM_CORNER_RECT, Card::LINE_COLOUR);
 			}
 
 			show_cascade(cards);

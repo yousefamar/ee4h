@@ -1,5 +1,5 @@
 /************************************************************************\
-| Card file for EE4H Assignment										 |
+| Card file for EE4H Assignment											 |
 |																		 |
 | Authors: Yousef Amar and Chris Lewis									 |
 | Last Modified: 05/02/2014												 |
@@ -9,6 +9,18 @@
 #include "../include/stdafx.h"
 
 using namespace std;
+
+//#define CORNER_H_PERC 0.15F
+//#define CORNER_V_PERC 0.25F
+
+// Initialise corner Rects
+const cv::Rect Card::TOP_CORNER_RECT = cv::Rect(0, 0, 0.15F * Card::WIDTH, 0.25F * Card::HEIGHT);
+const cv::Rect Card::BOTTOM_CORNER_RECT = cv::Rect(Card::WIDTH - 0.15F * Card::WIDTH, Card::HEIGHT - 0.25F * Card::HEIGHT, 0.15F * Card::WIDTH, 0.25F * Card::HEIGHT);
+const int Card::CORNER_AREA = Card::TOP_CORNER_RECT.area();
+
+// Initialise colours
+const cv::Scalar Card::LINE_COLOUR = cv::Scalar(0, 255, 0);
+const cv::Scalar Card::TEXT_COLOUR = cv::Scalar(255, 255, 0);
 
 int Card::card_window_count = 0;
 

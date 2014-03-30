@@ -10,9 +10,6 @@
 #define window_width 250
 #define window_height 120
 
-#define line_colour cv::Scalar(0, 255, 0)
-#define text_colour cv::Scalar(255, 255, 0)
-
 //Constants
 #define WINDOW_TITLE "Processing Card"
 
@@ -32,6 +29,12 @@ public:
 		RED,
 		UNKNOWN_COLOUR
 	};
+
+	static const int WIDTH = 250, HEIGHT = 350, AREA = 250*350, CORNER_AREA;
+	static const cv::Rect TOP_CORNER_RECT;
+	static const cv::Rect BOTTOM_CORNER_RECT;
+	static const cv::Scalar LINE_COLOUR;
+	static const cv::Scalar TEXT_COLOUR;
 
 	static int card_window_count;
 

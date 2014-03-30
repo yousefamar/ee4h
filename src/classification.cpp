@@ -171,7 +171,7 @@ void find_colour(Card* card)
 	cv::Mat working = make_background_black(card->mat, 100);
 	working = filter_red_channel(working, 0);
 	cv::imshow("Red Channel Filter", working);
-	card->detected_colour = is_red_suit_by_corners(working, corner_h_perc, corner_v_perc, 100, 2, 0.15F) == true ? Card::RED : Card::BLACK;
+	card->detected_colour = is_red_suit_by_corners(working, 100, 2, 0.15F) == true ? Card::RED : Card::BLACK;
 }
 
 void find_value(Card* card)
