@@ -224,15 +224,22 @@ int find_cards(cv::Mat input, vector<Card>* cards)
 			continue;
 
 		// Check whiteness of both corners
-		whiteness = ((float) cv::countNonZero(card.mat_bin(Card::TOP_CORNER_RECT)) + (float) cv::countNonZero(card.mat_bin(Card::TOP_CORNER_RECT))) / (Card::CORNER_AREA<<1);
+		whiteness = ((float) cv::countNonZero(card.mat_bin(Card::TOP_CORNER_RECT)) + (float) cv::countNonZero(card.mat_bin(Card::BOTTOM_CORNER_RECT))) / (Card::CORNER_AREA<<1);
 		
 		printf("Whiteness in card %d corners: %.2f\n", i, whiteness);
 
-		if (whiteness > 0.8F) {
+		if (whiteness > 0.8F)
+		{
+			cv::Mat quad_rot;
 			rotate(&corners[0], &corners[1], &corners[4]);
 			cv::Mat transmtx = cv::getPerspectiveTransform(corners, quad_pts);
-			cv::warpPerspective(input, quad, transmtx, quad.size());
-			card = Card(quad);
+			cv::warpPerspective(input, quad_rot, transmtx, quad.size());
+
+			Card card_rot(quad);
+
+			// Compare against old corner whiteness
+			if (whiteness >= ((float) cv::countNonZero(card_rot.mat_bin(Card::TOP_CORNER_RECT)) + (float) cv::countNonZero(card_rot.mat_bin(Card::BOTTOM_CORNER_RECT))) / (Card::CORNER_AREA<<1))
+				card = card_rot;
 		}
 
 		// Draw contours
