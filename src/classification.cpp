@@ -226,7 +226,7 @@ int find_suit_scaled(Card *card, float minimum_perc, int max_scale)
 				cv::resize(se_symbols[j].clone(), temp, size);
 
 				//Do match
-				cout << "Suit " << (j + 1) << "/4. Scale: " << i << "/" << max_scale << "\..." << endl;
+				cout << "Suit " << (j + 1) << "/4. Scale: " << i << "/" << max_scale << "\"" << endl;
 				matches[j] += count_blobs(hit_or_miss(card->mat, temp, minimum_perc), 255);
 			}
 		}
