@@ -106,7 +106,7 @@ int main(int argc, char **argv)
 		else
 		{
 			cv::VideoCapture cap(CV_CAP_ANY);
-			Sleep(1000);
+			cv::waitKey(1000);
 
 			if(!cap.isOpened())
 			{
