@@ -69,10 +69,10 @@ int count_blobs(cv::Mat input)
 		for(int x = 0; x < input_size.width; x++)
 		{
 			// Count blob then remove by flood-filling it out
-			if(in_data[y*input.step + x])
+			if(in_data[y*input.step + x] < 128)	//Detect black, not white
 			{
 				++count;
-				cv::floodFill(input, cv::Point(x, y), cv::Scalar(0));
+				cv::floodFill(input, cv::Point(x, y), cv::Scalar(255));
 			}
 		}
 	}
@@ -177,7 +177,20 @@ void find_colour(Card* card)
 void find_value(Card* card)
 {
 	cv::imshow("Binary Threshold", card->mat_bin);
-	card->detected_value = count_blobs(card->mat_bin) - 4;	//Count symbols, -4 for corners
+
+	cv::Mat temp = card->mat_bin.clone();
+
+	//Ignore the corners
+	cv::rectangle(temp, Card::TOP_CORNER_RECT, cv::Scalar(255), CV_FILLED);
+	cv::rectangle(temp, Card::BOTTOM_CORNER_RECT, cv::Scalar(255), CV_FILLED);
+
+	//Erode number
+	temp = binary_operation(temp, MODE_BINARY_DILATION, 5);
+	temp = binary_closing(temp, 10);
+	cv::imshow("CLclose", temp);
+
+	//Count blobs
+	card->detected_value = count_blobs(temp);	//Count symbols
 }
 
 int find_suit(Card *card, float minimum_perc)
