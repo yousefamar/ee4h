@@ -127,7 +127,9 @@ cv::Mat Card::results_to_mat()
 		break;
 	}
 
-	mat_sym.copyTo(canvas(cv::Rect(window_width - mat_sym.size().width, window_height - mat_sym.size().height, mat_sym.size().width, mat_sym.size().height)));
+	// Small hack; equivalent of != null
+	if (mat_sym.size().width)
+		mat_sym.copyTo(canvas(cv::Rect(window_width - mat_sym.size().width, window_height - mat_sym.size().height, mat_sym.size().width, mat_sym.size().height)));
 
 	//Detected value
 	stringstream val_stream;
