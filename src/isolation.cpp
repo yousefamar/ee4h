@@ -247,3 +247,53 @@ void find_cards(cv::Mat input, vector<Card>* cards)
 
 	cv::imshow("Cards Found", found);
 }
+
+cv::Rect xor_crop(cv::Mat mat1, cv::Mat mat2)
+{
+	cv::Mat xord = mat1 ^ mat2;
+	
+	std::vector<cv::Point> points;
+
+	uchar *in_data = (uchar*)xord.data;
+	for(int y = 0; y < Card::TOP_CORNER_RECT.height; y++)
+	{
+		for(int x = 0; x < Card::TOP_CORNER_RECT.width; x++)
+		{
+			if(in_data[y*xord.step + x])
+			{
+				points.push_back(cv::Point(x, y));
+			}
+		}
+	}
+
+	return cv::boundingRect(points);
+}
+
+void find_symbol(Card *card) {
+	std::vector<cv::Mat> blobs;
+
+	cv::Mat card_bin = card->mat_bin.clone();
+
+	cv::Rect last_aabb;
+
+	//For each pixel...
+	uchar *in_data = (uchar*)card_bin.data;
+	for(int y = 0; y < Card::TOP_CORNER_RECT.height; y++)
+	{
+		for(int x = 0; x < Card::TOP_CORNER_RECT.width; x++)
+		{
+			// Count blob then remove by flood-filling it out
+			if(!in_data[y*card_bin.step + x])
+			{
+				cv::Mat clone = card_bin.clone();
+				cv::floodFill(card_bin, cv::Point(x, y), cv::Scalar(1));
+
+				last_aabb = xor_crop(card_bin, clone);
+			}
+		}
+	}
+
+	cv::rectangle(card->mat, last_aabb, Card::LINE_COLOUR_ALT);
+	
+	card->mat_sym = card->mat(last_aabb);
+}

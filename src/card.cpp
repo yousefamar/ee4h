@@ -10,16 +10,16 @@
 
 using namespace std;
 
-//#define CORNER_H_PERC 0.15F
-//#define CORNER_V_PERC 0.25F
+//#define CORNER_H_PERC 0.12F
+//#define CORNER_V_PERC 0.28F
 
 // Initialise corner Rects
-const cv::Rect Card::TOP_CORNER_RECT = cv::Rect(0, 0, 0.15F * Card::WIDTH, 0.25F * Card::HEIGHT);
-const cv::Rect Card::BOTTOM_CORNER_RECT = cv::Rect(Card::WIDTH - 0.15F * Card::WIDTH, Card::HEIGHT - 0.25F * Card::HEIGHT, 0.15F * Card::WIDTH, 0.25F * Card::HEIGHT);
+const cv::Rect Card::TOP_CORNER_RECT = cv::Rect(0, 0, 0.12F * Card::WIDTH, 0.28F * Card::HEIGHT);
+const cv::Rect Card::BOTTOM_CORNER_RECT = cv::Rect(Card::WIDTH - 0.12F * Card::WIDTH, Card::HEIGHT - 0.28F * Card::HEIGHT, 0.12F * Card::WIDTH, 0.28F * Card::HEIGHT);
 const int Card::CORNER_AREA = Card::TOP_CORNER_RECT.area();
 
 // Initialise colours
-const cv::Scalar Card::LINE_COLOUR = cv::Scalar(0, 255, 0);
+const cv::Scalar Card::LINE_COLOUR = cv::Scalar(0, 255, 0), Card::LINE_COLOUR_ALT = cv::Scalar(255, 0, 0);
 const cv::Scalar Card::TEXT_COLOUR = cv::Scalar(255, 255, 0);
 
 int Card::card_window_count = 0;
@@ -126,6 +126,8 @@ cv::Mat Card::results_to_mat()
 		cv::putText(canvas, "Suit: UNKNOWN", cv::Point(10, 85), CV_FONT_HERSHEY_PLAIN, 2, cv::Scalar(0, 0, 0), 1, 8, false);
 		break;
 	}
+
+	mat_sym.copyTo(canvas(cv::Rect(window_width - mat_sym.size().width, window_height - mat_sym.size().height, mat_sym.size().width, mat_sym.size().height)));
 
 	//Detected value
 	stringstream val_stream;

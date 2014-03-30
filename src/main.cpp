@@ -62,6 +62,8 @@ int main(int argc, char **argv)
 				//Get card_mat value
 				find_value(card);
 				
+				find_symbol(card);
+
 				//Show regions searched on output window
 				cv::rectangle(card->mat, Card::TOP_CORNER_RECT, Card::LINE_COLOUR);
 				cv::rectangle(card->mat, Card::BOTTOM_CORNER_RECT, Card::LINE_COLOUR);
