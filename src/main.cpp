@@ -87,9 +87,9 @@ int main(int argc, char **argv)
 				 << "----------------------------------------------" << endl << endl;
 	
 	//Check image is provided
-	if(argc < 1)
+	if(argc < 2)
 	{
-		cout << "Arguments error. Check image path/format?" << endl;
+		cout << "Arguments error. Check image path/format? Did you mean to use --cam?" << endl;
 		return -1;	//Incorrect arguments code
 	}
 
@@ -106,6 +106,7 @@ int main(int argc, char **argv)
 		else
 		{
 			cv::VideoCapture cap(CV_CAP_ANY);
+			Sleep(1000);
 
 			if(!cap.isOpened())
 			{
