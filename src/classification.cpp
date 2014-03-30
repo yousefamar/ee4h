@@ -171,7 +171,7 @@ void find_colour(Card* card)
 	cv::Mat working = make_background_black(card->mat, 100);
 	working = filter_red_channel(working, 0);
 	cv::imshow("Red Channel Filter", working);
-	card->detected_colour = is_red_suit_by_corners(working, 100, 2, 0.15F) == true ? Card::RED : Card::BLACK;
+	card->detected_colour = is_red_suit_by_corners(working, 100, 2, 0.10F) == true ? Card::RED : Card::BLACK;
 }
 
 void find_value(Card* card)
@@ -271,7 +271,7 @@ int find_suit_scaled(Card *card, float minimum_perc, int max_scale)
 	}
 }
 
-int find_suit_sym(Card *card, float minimum_perc)
+void find_suit_sym(Card *card, float minimum_perc)
 {
 	cv::Mat mat_sym_1c;
 	if(card->mat_sym.channels() != 1)
@@ -294,23 +294,32 @@ int find_suit_sym(Card *card, float minimum_perc)
 		cv::imread("res/symbols/scale_full/spade.png", CV_LOAD_IMAGE_GRAYSCALE)
 	};
 
-	//For reach symbol
+	//Calculate new size
+	cv::Size size(100, 100);	
+	cv::resize(mat_sym_1c, mat_sym_1c, size);	//Should always be resized at runtime
+
+	//For reach symbol, resize SE
 	for(int j = 0; j < 4; j++)
 	{
-		//Calculate new size
-		cv::Size size(100, 100);
-
 		//Resize SE
-		cv::Mat template_mat;
-		cv::resize(se_symbols[j].clone(), template_mat, size);
-		cv::resize(mat_sym_1c, mat_sym_1c, size);
+		cv::resize(se_symbols[j], se_symbols[j], size);	//TODO statically resize and tidy symbol files?
+	}
 
-		cv::imshow("template", template_mat);
-		cv::imshow("sym", mat_sym_1c);
-
-		//Do match
-		cout << "Suit " << (j + 1) << "/4."  << endl;
-		matches[j] += (int)round(hit_or_miss_score(mat_sym_1c, template_mat) * 100.0F);
+	//Do matches using colour info integration
+	if(card->detected_colour == Card::RED)
+	{
+		matches[DIAMOND] += (int)round(hit_or_miss_score(mat_sym_1c, se_symbols[DIAMOND]) * 100.0F);
+		matches[HEART] += (int)round(hit_or_miss_score(mat_sym_1c, se_symbols[HEART]) * 100.0F);
+	}
+	else if(card->detected_colour == Card::BLACK)
+	{
+		matches[CLUB] += (int)round(hit_or_miss_score(mat_sym_1c, se_symbols[CLUB]) * 100.0F);
+		matches[SPADE] += (int)round(hit_or_miss_score(mat_sym_1c, se_symbols[SPADE]) * 100.0F);
+	}
+	else
+	{
+		cout << "Colour has not been detected before find_suit_sym()!" << endl;
+		return;
 	}
 
 	cout << "Scores (C/D/H/S): " << matches[CLUB] << "/" << matches[DIAMOND] << "/" << matches[HEART] << "/" << matches[SPADE] << endl;
@@ -320,30 +329,26 @@ int find_suit_sym(Card *card, float minimum_perc)
 	{
 		cout << "Suit may be CLUBS!" << endl;
 		card->detected_suit = Card::CLUBS;	//Make all in terms of #defined as enum can't be prototype return type!
-		return CLUB;
 	}
 	else if(max(matches[CLUB], matches[DIAMOND], matches[HEART], matches[SPADE]) == matches[DIAMOND])
 	{
 		cout << "Suit may be DIAMONDS!" << endl;
 		card->detected_suit = Card::DIAMONDS;
-		return DIAMOND;
 	}
 	else if(max(matches[CLUB], matches[DIAMOND], matches[HEART], matches[SPADE]) == matches[HEART])
 	{
 		cout << "Suit may be HEARTS!" << endl;
 		card->detected_suit = Card::HEARTS;
-		return HEART;
 	}
 	else if(max(matches[CLUB], matches[DIAMOND], matches[HEART], matches[SPADE]) == matches[SPADE])
 	{
 		cout << "Suit may be SPADES!" << endl;
 		card->detected_suit = Card::SPADES;
-		return SPADE;
 	}
 	else
 	{
 		cout << "No winner! UNKNOWN SUIT" << endl;
-		return -1;
+		card->detected_suit = Card::UNKNOWN_SUIT;
 	}
 }
 
