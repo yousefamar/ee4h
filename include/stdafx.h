@@ -2,9 +2,6 @@
 //Process includes only once
 #pragma once
 
-//For cam delay
-#include <Windows.h>
-
 #include <iostream>
 #include <string>
 #include <strstream>
