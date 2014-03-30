@@ -169,7 +169,7 @@ cv::Mat hough_trans(cv::Mat input)
   * cv::Mat cards:	Output card Mats
   *
   */
-void find_cards(cv::Mat input, vector<Card>* cards)
+int find_cards(cv::Mat input, vector<Card>* cards)
 {
 	cv::Mat found = input.clone();
 	vector<vector<cv::Point> > squares;
@@ -180,7 +180,7 @@ void find_cards(cv::Mat input, vector<Card>* cards)
 	}
 
 	if(squares.size() < 1)
-		throw 1;
+		return 1; // No cards found
 
 	std::vector<cv::Point2f> quad_pts;
 	std::vector<cv::Point2f> corners;
@@ -246,6 +246,8 @@ void find_cards(cv::Mat input, vector<Card>* cards)
 	printf("%lu cards found.\n", cards->size());
 
 	cv::imshow("Cards Found", found);
+
+	return 0;
 }
 
 cv::Rect xor_crop(cv::Mat mat1, cv::Mat mat2)

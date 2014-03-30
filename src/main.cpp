@@ -31,7 +31,10 @@ int process_image(cv::Mat input)
 
 		//Find cards in image and populate cards vector
 		vector<Card> cards;
-		find_cards(input, &cards);
+		if (find_cards(input, &cards)) {
+			cerr << "Could not find any cards!" << endl;
+			return -4; //No cards found
+		}
 
 		for(size_t i = 0; i < cards.size(); i++)
 		{
@@ -130,7 +133,12 @@ int main(int argc, char **argv)
 		if (process_image(input))
 			return EXIT_FAILURE;
 
-		cout << "Press " << (from_cam?"Esc":"any key") << " to quit" << endl;
+		if (!from_cam)
+		{
+			cout << "Press any key to quit" << endl;
+		} else {
+			cout << "Press Esc to quit, any other key to try again" << endl;
+		}
 
 		should_quit = (from_cam && cv::waitKey(0)==27) || (!from_cam && cv::waitKey(0));
 
