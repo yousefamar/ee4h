@@ -1,0 +1,47 @@
+\documentclass[convert]{standalone}
+
+\usepackage[latin1]{inputenc}
+\usepackage{tikz}
+\usetikzlibrary{shapes,arrows}
+\begin{document}
+
+\pagestyle{empty}
+
+
+% Define block styles
+\tikzstyle{decision} = [diamond, draw, fill=blue!20, text width=5em, text badly centered, inner sep=0pt]
+\tikzstyle{process} = [rectangle, draw, fill=blue!20, text width=6em, text centered, rounded corners, minimum height=4em]
+\tikzstyle{line} = [draw, -latex']
+\tikzstyle{cloud} = [draw, ellipse, fill=red!20, minimum height=2em]
+	
+\begin{tikzpicture}[node distance = 3cm, auto]
+	% Place nodes
+	\node [process] (imgget) {Get Image from File/Webcam};
+	\node [process, right of=imgget] (cardfind) {Isolate Cards};
+	\node [process, right of=cardfind] (colourdet) {Detect Colour};
+	\node [process, right of=colourdet] (typedet) {Detect Type};
+	\node [process, right of=typedet] (symfind) {Isolate Symbols};
+	\node [decision, right of=symfind] (ispic) {Is Card Picture Type?};
+	\node [process, above right of=ispic] (numdet) {Detect Number};
+	\node [process, below right of=ispic] (rankdet) {Detect Rank};
+	% Enhanced by colour detection
+	\node [process, below right of=numdet] (symdet) {Detect Suit};
+
+
+	% Draw edges
+	\path [line] (imgget) -- (cardfind);
+	\path [line] (cardfind) -- (colourdet);
+	\path [line] (colourdet) -- (typedet);
+	\path [line] (typedet) -- (symfind);
+	\path [line] (symfind) -- (ispic);
+	\path [line] (ispic) -- node {no} (numdet);
+	\path [line] (ispic) -- node [below left] {yes} (rankdet);
+	\path [line] (rankdet) -- (symdet);
+	\path [line] (numdet) -- (symdet);
+	%\path [line,dashed] (expert) -- (init);
+	%\path [line,dashed] (system) -- (init);
+	%\path [line,dashed] (system) |- (evaluate);
+\end{tikzpicture}
+
+
+\end{document}
