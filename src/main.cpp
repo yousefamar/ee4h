@@ -109,6 +109,11 @@ int main(int argc, char **argv)
 
 	bool from_cam = !strcmp(argv[1], "--cam"), should_quit = false;
 	
+	if (argc > 2) {
+		cout << "Multi mode activated!" << endl;
+		multi_mode = !strcmp(argv[2], "--multi");
+	}
+	
 	do
 	{
 		if(!from_cam)
