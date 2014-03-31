@@ -198,7 +198,7 @@ void show_cascade(vector<Card> cards)
 	for (size_t i = 0; i < cards.size(); ++i)
 		cards[i].mat = cards[i].as_mat_with_results();
 
-	cv::Mat final((cards.size()/cards_per_row + 1) * cards[0].mat.rows, min(cards.size() * cards[0].mat.cols, cards_per_row * cards[0].mat.cols), CV_8UC3);
+	cv::Mat final((cards.size()/cards_per_row) * cards[0].mat.rows, min(cards.size() * cards[0].mat.cols, cards_per_row * cards[0].mat.cols), CV_8UC3);
 
 	for (size_t i = 0; i < cards.size(); ++i)
 		cards[i].mat.copyTo(final(cv::Rect(cards[0].mat.cols * (i%cards_per_row), cards[0].mat.rows * (i/cards_per_row), cards[i].mat.cols, cards[i].mat.rows)));
