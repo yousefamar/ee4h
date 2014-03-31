@@ -219,12 +219,12 @@ void detect_value_number(Card *card)
 
 void detect_value_picture(Card *card)
 {
-	cv::Mat mat_sym_1c;
-	if(card->mat_sym.channels() != 1)
+	cv::Mat mat_rank_1c;
+	if(card->mat_rank.channels() != 1)
 	{
 		//Convert
-		cv::cvtColor(card->mat_sym, mat_sym_1c, CV_BGR2GRAY);
-		cv::threshold(mat_sym_1c, mat_sym_1c, 128, 255, cv::THRESH_BINARY);
+		cv::cvtColor(card->mat_rank, mat_rank_1c, CV_BGR2GRAY);
+		cv::threshold(mat_rank_1c, mat_rank_1c, 128, 255, cv::THRESH_BINARY);
 	}
 
 	cout << "Performing detect_value_picture()" << endl;
@@ -241,7 +241,7 @@ void detect_value_picture(Card *card)
 
 	//Calculate new size
 	cv::Size size(100, 100);	
-	cv::resize(mat_sym_1c, mat_sym_1c, size);	//Should always be resized at runtime
+	cv::resize(mat_rank_1c, mat_rank_1c, size);	//Should always be resized at runtime
 
 	//For reach symbol, resize SE
 	for(int j = 0; j < 3; j++)
@@ -251,9 +251,12 @@ void detect_value_picture(Card *card)
 	}
 
 	//Do matches using colour info integration
-	matches[JACK] += (int)round(hit_or_miss_score(mat_sym_1c, se_symbols[JACK]) * 100.0F);
-	matches[QUEEN] += (int)round(hit_or_miss_score(mat_sym_1c, se_symbols[QUEEN]) * 100.0F);
-	matches[KING] += (int)round(hit_or_miss_score(mat_sym_1c, se_symbols[KING]) * 100.0F);
+	matches[JACK] += (int)round(hit_or_miss_score(mat_rank_1c, se_symbols[JACK]) * 100.0F);
+	matches[QUEEN] += (int)round(hit_or_miss_score(mat_rank_1c, se_symbols[QUEEN]) * 100.0F);
+	matches[KING] += (int)round(hit_or_miss_score(mat_rank_1c, se_symbols[KING]) * 100.0F);
+
+	cv::imshow("input", mat_rank_1c);
+	cv::imshow("template", se_symbols[QUEEN]);	//Only relevant for threecards.jpg
 
 	cout << "Scores (J/Q/K): " << matches[JACK] << "/" << matches[QUEEN] << "/" << matches[KING] << endl;
 

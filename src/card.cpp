@@ -140,7 +140,7 @@ cv::Mat Card::results_to_mat()
 	cv::putText(canvas, val_stream.str(), cv::Point(10, 110), CV_FONT_HERSHEY_PLAIN, 2, cv::Scalar(0, 0, 0), 1, 8, false);
 
 	//Detected picture card?
-	if(detected_rank != Card::UNKNOWN_RANK)
+	if(is_picture_card == true)
 	{
 		switch(detected_rank) {
 		case RANK_JACK:
@@ -198,4 +198,57 @@ void show_cascade(vector<Card> cards)
 	stringstream title_stream;
 	title_stream << WINDOW_TITLE;
 	cv::imshow(title_stream.str(), final);
+
+	//Nice CMD summary
+	cout << endl << "============== Detected Cards ==============" << endl << endl;
+
+	for(size_t i = 0; i < cards.size(); i++)
+	{
+		cout << "Card " << (i + 1) << ": The ";
+
+		if(cards[i].is_picture_card)
+		{
+			switch(cards[i].detected_rank)
+			{
+			case Card::RANK_JACK:
+				cout << "Jack";
+				break;
+			case Card::RANK_QUEEN:
+				cout << "Queen";
+				break;
+			case Card::RANK_KING:
+				cout << "King";
+				break;
+			case Card::RANK_ACE:
+				cout << "Ace";
+				break;
+			}
+		}
+		else
+		{
+			cout << cards[i].detected_value;
+		}
+
+		cout << " of ";
+
+		switch(cards[i].detected_suit)
+		{
+		case Card::CLUBS:
+			cout << "Clubs";
+			break;
+		case Card::DIAMONDS:
+			cout << "Diamonds";
+			break;
+		case Card::HEARTS:
+			cout << "Hearts";
+			break;
+		case Card::SPADES:
+			cout << "Spades";
+			break;
+		}
+
+		cout << endl;
+	}
+
+	cout << endl << "============================================" << endl << endl;
 }
