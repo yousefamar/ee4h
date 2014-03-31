@@ -77,7 +77,6 @@ void find_squares(cv::Mat image, vector<vector<cv::Point> >& squares, int thresh
 	//cout << clahe_size << endl;
 
 	//CLAHE (Contrast Limited Adaptive Histogram Equalization)
-	cout << (multi_mode?"yo":"ho") << endl;
 	cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE(2.0, multi_mode?cv::Size(28, 28):cv::Size(32, 32));
 	clahe->apply(grey8, grey8);
 	//cv::equalizeHist(grey8, grey8);

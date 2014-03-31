@@ -111,7 +111,7 @@ int main(int argc, char **argv)
 	
 	if (argc > 2) {
 		cout << "Multi mode activated!" << endl;
-		multi_mode = !!strcmp(argv[2], "--multi");
+		multi_mode = !strcmp(argv[2], "--multi");
 	}
 	
 	do

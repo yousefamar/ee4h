@@ -185,6 +185,8 @@ void detect_type(Card *card)
 		find_squares(card->mat, squares, thresh);
 	}
 
+	// TODO: Somthing something diamond here (Ace of aforementioned suit)
+
 	if (squares.size() != 1)
 	{
 		card->is_picture_card = false;

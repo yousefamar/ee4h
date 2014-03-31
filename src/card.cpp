@@ -14,8 +14,8 @@ using namespace std;
 //#define CORNER_V_PERC 0.28F
 
 // Initialise corner Rects
-const cv::Rect Card::TOP_CORNER_RECT = cv::Rect(5, 5, 0.13F * Card::WIDTH - 5, 0.28F * Card::HEIGHT - 5);
-const cv::Rect Card::BOTTOM_CORNER_RECT = cv::Rect(Card::WIDTH - 0.13F * Card::WIDTH - 5, Card::HEIGHT - 0.28F * Card::HEIGHT - 5, 0.13F * Card::WIDTH, 0.28F * Card::HEIGHT);
+const cv::Rect Card::TOP_CORNER_RECT = cv::Rect(5, 5, 0.15F * Card::WIDTH - 5, 0.28F * Card::HEIGHT - 5);
+const cv::Rect Card::BOTTOM_CORNER_RECT = cv::Rect(Card::WIDTH - 0.15F * Card::WIDTH - 5, Card::HEIGHT - 0.28F * Card::HEIGHT - 5, 0.15F * Card::WIDTH, 0.28F * Card::HEIGHT);
 const int Card::CORNER_AREA = Card::TOP_CORNER_RECT.area();
 
 // Initialise colours
