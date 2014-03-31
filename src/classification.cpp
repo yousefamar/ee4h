@@ -215,6 +215,12 @@ void detect_value_number(Card *card)
 
 	//Count blobs
 	card->detected_value = count_blobs(temp, 0);	//Count symbols
+
+	if(card->detected_value == 1)
+	{
+		card->detected_rank = Card::RANK_ACE;
+		card->is_picture_card = true;
+	}
 }
 
 void detect_value_picture(Card *card)

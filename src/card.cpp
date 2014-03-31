@@ -14,7 +14,7 @@ using namespace std;
 //#define CORNER_V_PERC 0.28F
 
 // Initialise corner Rects
-const cv::Rect Card::TOP_CORNER_RECT = cv::Rect(0, 0, 0.13F * Card::WIDTH, 0.28F * Card::HEIGHT);
+const cv::Rect Card::TOP_CORNER_RECT = cv::Rect(2, 2, 0.13F * Card::WIDTH - 2, 0.28F * Card::HEIGHT - 2);
 const cv::Rect Card::BOTTOM_CORNER_RECT = cv::Rect(Card::WIDTH - 0.13F * Card::WIDTH, Card::HEIGHT - 0.28F * Card::HEIGHT, 0.13F * Card::WIDTH, 0.28F * Card::HEIGHT);
 const int Card::CORNER_AREA = Card::TOP_CORNER_RECT.area();
 
@@ -152,6 +152,9 @@ cv::Mat Card::results_to_mat()
 		case RANK_KING:
 			cv::putText(canvas, "Rank: KING", cv::Point(10, 135), CV_FONT_HERSHEY_PLAIN, 2, cv::Scalar(0, 0, 0), 1, 8, false);
 			break;
+		case RANK_ACE:
+			cv::putText(canvas, "Rank: ACE", cv::Point(10, 135), CV_FONT_HERSHEY_PLAIN, 2, cv::Scalar(0, 0, 0), 1, 8, false);
+			break;
 		default:
 			cv::putText(canvas, "Rank: UNKNOWN", cv::Point(10, 135), CV_FONT_HERSHEY_PLAIN, 2, cv::Scalar(0, 0, 0), 1, 8, false);
 			break;
@@ -171,6 +174,12 @@ cv::Mat Card::as_mat_with_results()
 	cv::Mat final(mat.rows + results_mat.rows, max(mat.cols, results_mat.cols), CV_8UC3);
 	mat.copyTo(final(cv::Rect(0, 0, mat.cols, mat.rows)));
 	results_mat.copyTo(final(cv::Rect(0, mat.rows, results_mat.cols, results_mat.rows)));
+
+	//Show regions searched on output window
+	cv::rectangle(final, Card::TOP_CORNER_RECT, Card::LINE_COLOUR);
+	cv::rectangle(final, Card::BOTTOM_CORNER_RECT, Card::LINE_COLOUR);
+	cv::rectangle(final, _last_aabb, Card::LINE_COLOUR_ALT);
+	cv::rectangle(final, _rank_aabb, Card::LINE_COLOUR_ALT);
 
 	return final;
 }

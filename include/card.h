@@ -53,6 +53,7 @@ public:
 	PictureRank detected_rank;
 	int detected_value;
 	bool is_picture_card;
+	cv::Rect _last_aabb, _rank_aabb;
 
 	//Constructor declarations
 	Card();
