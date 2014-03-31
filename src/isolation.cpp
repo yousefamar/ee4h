@@ -287,12 +287,14 @@ cv::Rect xor_crop(cv::Mat mat1, cv::Mat mat2)
 	return cv::boundingRect(points);
 }
 
-void find_symbol(Card *card) {
+void find_symbols(Card *card) {
 	std::vector<cv::Mat> blobs;
 
 	cv::Mat card_bin = card->mat_bin.clone();
 
 	cv::Rect last_aabb;
+
+	bool blob_found = false;
 
 	//For each pixel...
 	uchar *in_data = (uchar*)card_bin.data;
@@ -311,6 +313,12 @@ void find_symbol(Card *card) {
 				last_aabb.y -= 2;
 				last_aabb.width += 4;
 				last_aabb.height += 4;
+
+				if (!blob_found)
+				{
+					card->mat_rank = card->mat(last_aabb);
+					blob_found = true;
+				}
 			}
 		}
 	}

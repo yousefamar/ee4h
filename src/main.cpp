@@ -48,11 +48,18 @@ int process_image(cv::Mat input)
 			//Detect suit type (number/picture)
 			detect_type(card);
 
-			//Get card_mat value
-			detect_value(card);
-			
-			//Find symbol
-			find_symbol(card);
+			//Find symbols
+			find_symbols(card);
+
+			//Get card value
+			if (!card->is_picture_card)
+			{
+				detect_value_number(card);
+			}
+			else
+			{
+				detect_value_picture(card);
+			}
 
 			//Find suit
 			find_suit_sym(card, 0.95F);

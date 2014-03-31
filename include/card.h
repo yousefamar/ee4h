@@ -39,7 +39,7 @@ public:
 	static int card_window_count;
 
 	//Data
-	cv::Mat mat, mat_clahe, mat_bin, mat_sym;
+	cv::Mat mat, mat_clahe, mat_bin, mat_sym, mat_rank;
 	Suit detected_suit;
 	Colour detected_colour;
 	int detected_value;

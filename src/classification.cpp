@@ -198,7 +198,7 @@ void detect_type(Card *card)
 	cv::fillPoly(card->mat_bin, &p, &n, 1, cv::Scalar(255, 255, 255));
 }
 
-void detect_value(Card *card)
+void detect_value_number(Card *card)
 {
 	cv::imshow("Binary Threshold", card->mat_bin);
 
@@ -215,6 +215,11 @@ void detect_value(Card *card)
 
 	//Count blobs
 	card->detected_value = count_blobs(temp, 0);	//Count symbols
+}
+
+void detect_value_picture(Card *card)
+{
+	// TODO
 }
 
 int find_suit_scaled(Card *card, float minimum_perc, int max_scale)
