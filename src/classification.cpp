@@ -219,7 +219,65 @@ void detect_value_number(Card *card)
 
 void detect_value_picture(Card *card)
 {
-	// TODO
+	cv::Mat mat_sym_1c;
+	if(card->mat_sym.channels() != 1)
+	{
+		//Convert
+		cv::cvtColor(card->mat_sym, mat_sym_1c, CV_BGR2GRAY);
+		cv::threshold(mat_sym_1c, mat_sym_1c, 128, 255, cv::THRESH_BINARY);
+	}
+
+	cout << "Performing detect_value_picture()" << endl;
+
+	//HOM all suits at all scales at both normal and flip orientations
+	int matches[3] = {0, 0, 0};
+
+	//Load original SEs
+	cv::Mat se_symbols[3] = {
+		cv::imread("res/symbols/scale_full/jack.png", CV_LOAD_IMAGE_GRAYSCALE),
+		cv::imread("res/symbols/scale_full/queen.png", CV_LOAD_IMAGE_GRAYSCALE),
+		cv::imread("res/symbols/scale_full/king.png", CV_LOAD_IMAGE_GRAYSCALE)
+	};
+
+	//Calculate new size
+	cv::Size size(100, 100);	
+	cv::resize(mat_sym_1c, mat_sym_1c, size);	//Should always be resized at runtime
+
+	//For reach symbol, resize SE
+	for(int j = 0; j < 3; j++)
+	{
+		//Resize SE
+		cv::resize(se_symbols[j], se_symbols[j], size);	//TODO statically resize and tidy symbol files?
+	}
+
+	//Do matches using colour info integration
+	matches[JACK] += (int)round(hit_or_miss_score(mat_sym_1c, se_symbols[JACK]) * 100.0F);
+	matches[QUEEN] += (int)round(hit_or_miss_score(mat_sym_1c, se_symbols[QUEEN]) * 100.0F);
+	matches[KING] += (int)round(hit_or_miss_score(mat_sym_1c, se_symbols[KING]) * 100.0F);
+
+	cout << "Scores (J/Q/K): " << matches[JACK] << "/" << matches[QUEEN] << "/" << matches[KING] << endl;
+
+	//Find which suit was matched most
+	if(max(matches[JACK], matches[QUEEN], matches[KING]) == matches[JACK])
+	{
+		cout << "Rank may be JACK!" << endl;
+		card->detected_rank = Card::RANK_JACK;
+	}
+	else if(max(matches[QUEEN], matches[QUEEN], matches[KING]) == matches[QUEEN])
+	{
+		cout << "Rank may be QUEEN!" << endl;
+		card->detected_rank = Card::RANK_QUEEN;
+	}
+	else if(max(matches[KING], matches[QUEEN], matches[KING]) == matches[KING])
+	{
+		cout << "Rank may be KING!" << endl;
+		card->detected_rank = Card::RANK_KING;
+	}
+	else
+	{
+		cout << "No winner! UNKNOWN SUIT" << endl;
+		card->detected_suit = Card::UNKNOWN_SUIT;
+	}
 }
 
 int find_suit_scaled(Card *card, float minimum_perc, int max_scale)

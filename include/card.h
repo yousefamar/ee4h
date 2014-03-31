@@ -24,6 +24,14 @@ public:
 		UNKNOWN_SUIT
 	};
 
+	enum PictureRank {
+		RANK_JACK,
+		RANK_QUEEN,
+		RANK_KING,
+		RANK_ACE,
+		UNKNOWN_RANK
+	};
+
 	enum Colour {
 		BLACK,
 		RED,
@@ -42,6 +50,7 @@ public:
 	cv::Mat mat, mat_clahe, mat_bin, mat_sym, mat_rank;
 	Suit detected_suit;
 	Colour detected_colour;
+	PictureRank detected_rank;
 	int detected_value;
 	bool is_picture_card;
 

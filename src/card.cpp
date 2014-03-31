@@ -32,6 +32,7 @@ Card::Card()
 	detected_suit = UNKNOWN_SUIT;
 	detected_colour = UNKNOWN_COLOUR;
 	detected_value = -1;
+	detected_rank = UNKNOWN_RANK;
 
 	/*stringstream title_stream;
 	title_stream << WINDOW_TITLE;
@@ -90,7 +91,7 @@ void Card::show_with_card(cv::Mat card)
 cv::Mat Card::results_to_mat()
 {
 	//Create canvas
-	cv::Mat canvas(window_height, window_width, CV_8UC3, cv::Scalar(255, 255, 255));
+	cv::Mat canvas(window_height + 20, window_width + 10, CV_8UC3, cv::Scalar(255, 255, 255));
 
 	//Title
 	cv::putText(canvas, "Results:", cv::Point(10, 35), CV_FONT_HERSHEY_PLAIN, 3, cv::Scalar(0, 0, 0), 1, 8, false);
@@ -137,6 +138,29 @@ cv::Mat Card::results_to_mat()
 	stringstream val_stream;
 	val_stream << "Value: " << detected_value;
 	cv::putText(canvas, val_stream.str(), cv::Point(10, 110), CV_FONT_HERSHEY_PLAIN, 2, cv::Scalar(0, 0, 0), 1, 8, false);
+
+	//Detected picture card?
+	if(detected_rank != Card::UNKNOWN_RANK)
+	{
+		switch(detected_rank) {
+		case RANK_JACK:
+			cv::putText(canvas, "Rank: JACK", cv::Point(10, 135), CV_FONT_HERSHEY_PLAIN, 2, cv::Scalar(0, 0, 0), 1, 8, false);
+			break;
+		case RANK_QUEEN:
+			cv::putText(canvas, "Rank: QUEEN", cv::Point(10, 135), CV_FONT_HERSHEY_PLAIN, 2, cv::Scalar(0, 0, 0), 1, 8, false);
+			break;
+		case RANK_KING:
+			cv::putText(canvas, "Rank: KING", cv::Point(10, 135), CV_FONT_HERSHEY_PLAIN, 2, cv::Scalar(0, 0, 0), 1, 8, false);
+			break;
+		default:
+			cv::putText(canvas, "Rank: UNKNOWN", cv::Point(10, 135), CV_FONT_HERSHEY_PLAIN, 2, cv::Scalar(0, 0, 0), 1, 8, false);
+			break;
+		}
+	}
+	else
+	{
+		cv::putText(canvas, "Rank: N/A", cv::Point(10, 130), CV_FONT_HERSHEY_PLAIN, 2, cv::Scalar(0, 0, 0), 1, 8, false);
+	}
 
 	return canvas;
 }
