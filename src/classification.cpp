@@ -170,7 +170,7 @@ void detect_colour(Card *card)
 {
 	cv::Mat working = make_background_black(card->mat, 100);
 	working = filter_red_channel(working, 0);
-	cv::imshow("Red Channel Filter", working);
+	//cv::imshow("Red Channel Filter", working);
 	card->detected_colour = is_red_suit_by_corners(working, 100, 2, 0.10F) == true ? Card::RED : Card::BLACK;
 }
 
@@ -200,7 +200,7 @@ void detect_type(Card *card)
 
 void detect_value_number(Card *card)
 {
-	cv::imshow("Binary Threshold", card->mat_bin);
+	//cv::imshow("Binary Threshold", card->mat_bin);
 
 	cv::Mat temp = card->mat_bin.clone();
 
@@ -211,7 +211,7 @@ void detect_value_number(Card *card)
 	//Erode number
 	temp = binary_operation(temp, MODE_BINARY_DILATION, 5);
 	temp = binary_closing(temp, 10);
-	cv::imshow("CLclose", temp);
+	//cv::imshow("CLclose", temp);
 
 	//Count blobs
 	card->detected_value = count_blobs(temp, 0);	//Count symbols
@@ -246,7 +246,7 @@ void detect_value_picture(Card *card)
 	};
 
 	//Calculate new size
-	cv::Size size(100, 100);	
+	cv::Size size(100, 100);
 	cv::resize(mat_rank_1c, mat_rank_1c, size);	//Should always be resized at runtime
 
 	//For reach symbol, resize SE

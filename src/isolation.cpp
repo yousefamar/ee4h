@@ -9,6 +9,8 @@
 
 using namespace std;
 
+bool multi_mode = false;
+
 //Configuration, have as #defines instead?
 int thresh_lower = 150, thresh_upper = 255, thresh_increment = 2;
 float min_square_diff = 0.1F;
@@ -71,17 +73,23 @@ void find_squares(cv::Mat image, vector<vector<cv::Point> >& squares, int thresh
 	cv::Mat grey8(image_size, CV_8U);
 	cv::cvtColor(image, grey8, CV_BGR2GRAY);
 
-	int clahe_size = (image_size.width + image_size.height)>>7;
+	int clahe_size = (image_size.width + image_size.height)>>8;
 	//cout << clahe_size << endl;
-	
-
-
 
 	//CLAHE (Contrast Limited Adaptive Histogram Equalization)
-	cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE(2.0, cv::Size(32, 32));
+	cout << (multi_mode?"yo":"ho") << endl;
+	cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE(2.0, multi_mode?cv::Size(28, 28):cv::Size(32, 32));
 	clahe->apply(grey8, grey8);
-	cv::blur(grey8, grey8, cv::Size(clahe_size, clahe_size));
-
+	//cv::equalizeHist(grey8, grey8);
+	if (clahe_size)
+		cv::blur(grey8, grey8, cv::Size(clahe_size, clahe_size));
+	
+	static int i = 0;
+	stringstream s;
+	s << "CLAHE " << i++;
+	if (i == 52)
+		cv::imshow(s.str(), grey8);
+	
 	cv::Mat grey = grey8 >= threshold;
 
 	//Find contours and store them all as a list
@@ -113,18 +121,19 @@ void find_squares(cv::Mat image, vector<vector<cv::Point> >& squares, int thresh
 				for (size_t j = 0; j < squares.size(); ++j)
 				{
 					//Is too similar to previous ones (same contour)
-					if (square_diff(squares[j], approx) < min_square_diff_rel)
+					for (int i = 0; i < 4; ++i)
 					{
-						is_duplicate_contour = true;
-						break;
+						vector<cv::Point> square = squares[j];
+						rotate(&square[0], &square[i], &square[4]);
+						if (square_diff(square, approx) < min_square_diff_rel)
+						{
+							is_duplicate_contour = true;
+							break;
+						}
 					}
-					vector<cv::Point> square = squares[j];
-					rotate(&square[0], &square[1], &square[4]);
-					if (square_diff(square, approx) < min_square_diff_rel)
-					{
-						is_duplicate_contour = true;
+					if (is_duplicate_contour)
 						break;
-					}
+					
 					if (quad_in_quad(approx, squares[j])) {
 						is_inside_another = true;
 						break;
