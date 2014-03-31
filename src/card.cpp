@@ -231,6 +231,9 @@ void show_cascade(vector<Card> cards)
 			case Card::RANK_ACE:
 				cout << "Ace";
 				break;
+			default:
+				cout << "Something";
+				break;
 			}
 		}
 		else
@@ -253,6 +256,9 @@ void show_cascade(vector<Card> cards)
 			break;
 		case Card::SPADES:
 			cout << "Spades";
+			break;
+		default:
+			cout << "Something";
 			break;
 		}
 

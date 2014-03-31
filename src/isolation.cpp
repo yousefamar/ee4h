@@ -74,6 +74,9 @@ void find_squares(cv::Mat image, vector<vector<cv::Point> >& squares, int thresh
 	int clahe_size = (image_size.width + image_size.height)>>7;
 	//cout << clahe_size << endl;
 	
+
+
+
 	//CLAHE (Contrast Limited Adaptive Histogram Equalization)
 	cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE(2.0, cv::Size(32, 32));
 	clahe->apply(grey8, grey8);
@@ -314,7 +317,7 @@ void find_symbols(Card *card) {
 
 				if (!blob_found)
 				{
-					card->_rank_aabb = xor_crop(card_bin, clone);
+					card->_rank_aabb = card->_last_aabb;
 					card->mat_rank = card->mat(card->_rank_aabb);
 					blob_found = true;
 				}
@@ -322,5 +325,6 @@ void find_symbols(Card *card) {
 		}
 	}
 	
-	card->mat_sym = card->mat(card->_last_aabb);
+	if (blob_found)
+		card->mat_sym = card->mat(card->_last_aabb);
 }
