@@ -213,7 +213,7 @@ void detect_value_number(Card *card)
 	//Erode number
 	temp = binary_operation(temp, MODE_BINARY_DILATION, 5);
 	temp = binary_closing(temp, 10);
-	//cv::imshow("CLclose", temp);
+	cv::imshow("Symbols after closing", temp);
 
 	//Count blobs
 	card->detected_value = count_blobs(temp, 0);	//Count symbols
