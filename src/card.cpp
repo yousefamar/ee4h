@@ -14,7 +14,7 @@ using namespace std;
 //#define CORNER_V_PERC 0.28F
 
 // Initialise corner Rects
-const cv::Rect Card::TOP_CORNER_RECT = cv::Rect(0, 0, 0.13F * Card::WIDTH, 0.28F * Card::HEIGHT);
+const cv::Rect Card::TOP_CORNER_RECT = cv::Rect(2, 2, 0.13F * Card::WIDTH - 2, 0.28F * Card::HEIGHT - 2);
 const cv::Rect Card::BOTTOM_CORNER_RECT = cv::Rect(Card::WIDTH - 0.13F * Card::WIDTH, Card::HEIGHT - 0.28F * Card::HEIGHT, 0.13F * Card::WIDTH, 0.28F * Card::HEIGHT);
 const int Card::CORNER_AREA = Card::TOP_CORNER_RECT.area();
 
@@ -32,6 +32,7 @@ Card::Card()
 	detected_suit = UNKNOWN_SUIT;
 	detected_colour = UNKNOWN_COLOUR;
 	detected_value = -1;
+	detected_rank = UNKNOWN_RANK;
 
 	/*stringstream title_stream;
 	title_stream << WINDOW_TITLE;
@@ -90,7 +91,7 @@ void Card::show_with_card(cv::Mat card)
 cv::Mat Card::results_to_mat()
 {
 	//Create canvas
-	cv::Mat canvas(window_height, window_width, CV_8UC3, cv::Scalar(255, 255, 255));
+	cv::Mat canvas(window_height + 20, window_width + 10, CV_8UC3, cv::Scalar(255, 255, 255));
 
 	//Title
 	cv::putText(canvas, "Results:", cv::Point(10, 35), CV_FONT_HERSHEY_PLAIN, 3, cv::Scalar(0, 0, 0), 1, 8, false);
@@ -138,6 +139,32 @@ cv::Mat Card::results_to_mat()
 	val_stream << "Value: " << detected_value;
 	cv::putText(canvas, val_stream.str(), cv::Point(10, 110), CV_FONT_HERSHEY_PLAIN, 2, cv::Scalar(0, 0, 0), 1, 8, false);
 
+	//Detected picture card?
+	if(is_picture_card == true)
+	{
+		switch(detected_rank) {
+		case RANK_JACK:
+			cv::putText(canvas, "Rank: JACK", cv::Point(10, 135), CV_FONT_HERSHEY_PLAIN, 2, cv::Scalar(0, 0, 0), 1, 8, false);
+			break;
+		case RANK_QUEEN:
+			cv::putText(canvas, "Rank: QUEEN", cv::Point(10, 135), CV_FONT_HERSHEY_PLAIN, 2, cv::Scalar(0, 0, 0), 1, 8, false);
+			break;
+		case RANK_KING:
+			cv::putText(canvas, "Rank: KING", cv::Point(10, 135), CV_FONT_HERSHEY_PLAIN, 2, cv::Scalar(0, 0, 0), 1, 8, false);
+			break;
+		case RANK_ACE:
+			cv::putText(canvas, "Rank: ACE", cv::Point(10, 135), CV_FONT_HERSHEY_PLAIN, 2, cv::Scalar(0, 0, 0), 1, 8, false);
+			break;
+		default:
+			cv::putText(canvas, "Rank: UNKNOWN", cv::Point(10, 135), CV_FONT_HERSHEY_PLAIN, 2, cv::Scalar(0, 0, 0), 1, 8, false);
+			break;
+		}
+	}
+	else
+	{
+		cv::putText(canvas, "Rank: N/A", cv::Point(10, 130), CV_FONT_HERSHEY_PLAIN, 2, cv::Scalar(0, 0, 0), 1, 8, false);
+	}
+
 	return canvas;
 }
 
@@ -147,6 +174,12 @@ cv::Mat Card::as_mat_with_results()
 	cv::Mat final(mat.rows + results_mat.rows, max(mat.cols, results_mat.cols), CV_8UC3);
 	mat.copyTo(final(cv::Rect(0, 0, mat.cols, mat.rows)));
 	results_mat.copyTo(final(cv::Rect(0, mat.rows, results_mat.cols, results_mat.rows)));
+
+	//Show regions searched on output window
+	cv::rectangle(final, Card::TOP_CORNER_RECT, Card::LINE_COLOUR);
+	cv::rectangle(final, Card::BOTTOM_CORNER_RECT, Card::LINE_COLOUR);
+	cv::rectangle(final, _last_aabb, Card::LINE_COLOUR_ALT);
+	cv::rectangle(final, _rank_aabb, Card::LINE_COLOUR_ALT);
 
 	return final;
 }
@@ -165,7 +198,7 @@ void show_cascade(vector<Card> cards)
 	for (size_t i = 0; i < cards.size(); ++i)
 		cards[i].mat = cards[i].as_mat_with_results();
 
-	cv::Mat final((cards.size()/cards_per_row + 1) * cards[0].mat.rows, min(cards.size() * cards[0].mat.cols, cards_per_row * cards[0].mat.cols), CV_8UC3);
+	cv::Mat final((cards.size()/cards_per_row) * cards[0].mat.rows, min(cards.size() * cards[0].mat.cols, cards_per_row * cards[0].mat.cols), CV_8UC3);
 
 	for (size_t i = 0; i < cards.size(); ++i)
 		cards[i].mat.copyTo(final(cv::Rect(cards[0].mat.cols * (i%cards_per_row), cards[0].mat.rows * (i/cards_per_row), cards[i].mat.cols, cards[i].mat.rows)));
@@ -174,4 +207,57 @@ void show_cascade(vector<Card> cards)
 	stringstream title_stream;
 	title_stream << WINDOW_TITLE;
 	cv::imshow(title_stream.str(), final);
+
+	//Nice CMD summary
+	cout << endl << "============== Detected Cards ==============" << endl << endl;
+
+	for(size_t i = 0; i < cards.size(); i++)
+	{
+		cout << "Card " << (i + 1) << ": The ";
+
+		if(cards[i].is_picture_card)
+		{
+			switch(cards[i].detected_rank)
+			{
+			case Card::RANK_JACK:
+				cout << "Jack";
+				break;
+			case Card::RANK_QUEEN:
+				cout << "Queen";
+				break;
+			case Card::RANK_KING:
+				cout << "King";
+				break;
+			case Card::RANK_ACE:
+				cout << "Ace";
+				break;
+			}
+		}
+		else
+		{
+			cout << cards[i].detected_value;
+		}
+
+		cout << " of ";
+
+		switch(cards[i].detected_suit)
+		{
+		case Card::CLUBS:
+			cout << "Clubs";
+			break;
+		case Card::DIAMONDS:
+			cout << "Diamonds";
+			break;
+		case Card::HEARTS:
+			cout << "Hearts";
+			break;
+		case Card::SPADES:
+			cout << "Spades";
+			break;
+		}
+
+		cout << endl;
+	}
+
+	cout << endl << "============================================" << endl << endl;
 }

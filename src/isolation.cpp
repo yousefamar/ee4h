@@ -292,15 +292,17 @@ void find_symbols(Card *card) {
 
 	cv::Mat card_bin = card->mat_bin.clone();
 
+	card_bin = binary_operation(card_bin, MODE_BINARY_EROSION, 3);
+
 	cv::Rect last_aabb;
 
 	bool blob_found = false;
 
 	//For each pixel...
 	uchar *in_data = (uchar*)card_bin.data;
-	for(int y = 0; y < Card::TOP_CORNER_RECT.height; y++)
+	for(int y = Card::TOP_CORNER_RECT.y; y < Card::TOP_CORNER_RECT.height; y++)
 	{
-		for(int x = 0; x < Card::TOP_CORNER_RECT.width; x++)
+		for(int x = Card::TOP_CORNER_RECT.x; x < Card::TOP_CORNER_RECT.width; x++)
 		{
 			// Count blob then remove by flood-filling it out
 			if(!in_data[y*card_bin.step + x])
@@ -308,22 +310,17 @@ void find_symbols(Card *card) {
 				cv::Mat clone = card_bin.clone();
 				cv::floodFill(card_bin, cv::Point(x, y), cv::Scalar(1));
 
-				last_aabb = xor_crop(card_bin, clone);
-				last_aabb.x -= 2;
-				last_aabb.y -= 2;
-				last_aabb.width += 4;
-				last_aabb.height += 4;
+				card->_last_aabb = xor_crop(card_bin, clone);
 
 				if (!blob_found)
 				{
-					card->mat_rank = card->mat(last_aabb);
+					card->_rank_aabb = xor_crop(card_bin, clone);
+					card->mat_rank = card->mat(card->_rank_aabb);
 					blob_found = true;
 				}
 			}
 		}
 	}
-
-	//cv::rectangle(card->mat, last_aabb, Card::LINE_COLOUR_ALT);
 	
-	card->mat_sym = card->mat(last_aabb);
+	card->mat_sym = card->mat(card->_last_aabb);
 }

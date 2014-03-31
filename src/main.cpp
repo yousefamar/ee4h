@@ -63,10 +63,6 @@ int process_image(cv::Mat input)
 
 			//Find suit
 			find_suit_sym(card, 0.95F);
-
-			//Show regions searched on output window
-			cv::rectangle(card->mat, Card::TOP_CORNER_RECT, Card::LINE_COLOUR);
-			cv::rectangle(card->mat, Card::BOTTOM_CORNER_RECT, Card::LINE_COLOUR);
 		}
 
 		//Show results until key press

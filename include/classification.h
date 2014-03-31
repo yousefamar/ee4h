@@ -8,6 +8,9 @@
 #define DIAMOND 1
 #define HEART 2
 #define SPADE 3
+#define JACK 0
+#define QUEEN 1
+#define KING 2
 
 cv::Mat canny_thresh(cv::Mat input, int low_thresh, int ratio, int kernel_size);
 cv::Mat morph_gradient(cv::Mat input);
