@@ -1,0 +1,41 @@
+Notes
+=====
+
+- Due 2014-04-28 12:00
+- Source code with executable and sample results as zip
+
+- No longer than 50 pages
+- Report contribution should be clearly identified
+- Page numbers, figure captions below, table captions above
+- Appendix: Declaration of contribution sheet in percentage and signed
+
+
+Contents
+--------
+
+- Introduction
+- Review
+	Potential techniques (expansion of workplan), like lit review
+- Proposed Method
+	Explain approach and justify, theoretical analysis and assessment
+- Implementation
+	Appropriateness of program design and implementation
+	Appropriate use of data structures and functions (dafuq)
+	Clarity of design documentation
+	Completeness of solution
+- Evaluation
+	Performance of methods used and an evaluation of their performance for the task
+	Quantitative analysis of performance to well defined criteria
+	(Confusion matrix)
+- Conclusion
+	Comments on appropriateness of the methods adopted and results obtained
+
+
+Report Should Show
+------------------
+
+- Clear understanding of theory for assignment
+- Understanding of related methods
+- Clear account of how to effectively implement methods considered
+- Evaluation of approach taken, a clear, reasoned, and balanced interpretation of results
+- Recognition of strengths and weaknesses of the methods and experiments
