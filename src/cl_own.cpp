@@ -1,12 +1,21 @@
 /*
  * Extra functions using OpenCV 2.4.8
- * Author: Chris Lewis
+ * Author: Chris Lewis (some code from Chris Lewis' FYP)
  */
 
 #include "../include/stdafx.h"
 
 /*
  * Check whether an integer is within a range
+ *
+ * Arguments:
+ *  int           lower: Lower limit of range
+ *  int         subject: The value to range check
+ *  int           upper: Upper limit of range
+ * bool limit_inclusive: True to include upper and lower in range check
+ *
+ * Returns:
+ * bool: True if the subject is higher than lower, and lower than upper
  */
 bool is_in_range(int lower, int subject, int upper, bool limit_inclusive)
 {
@@ -22,6 +31,13 @@ bool is_in_range(int lower, int subject, int upper, bool limit_inclusive)
 
 /*
  * Performs binary opening
+ *
+ * Arguments:
+ * cv::Mat        input: Input image matix to open
+ *     int element_size: Radius of the structuring element
+ *
+ * Returns:
+ * cv::Mat: Result of opening operator
  */
 cv::Mat binary_opening(cv::Mat input, int element_size)
 {
@@ -30,11 +46,19 @@ cv::Mat binary_opening(cv::Mat input, int element_size)
 	cv::Mat working = input.clone();
 	working = binary_operation(working, MODE_BINARY_EROSION, element_size);
 	working = binary_operation(working, MODE_BINARY_DILATION, element_size);
+	
 	return working;
 }
 
 /*
  * Performs binary closing
+ *
+ * Arguments:
+ * cv::Mat        input: Input image matix to close
+ *     int element_size: Radius of the structuring element
+ *
+ * Returns:
+ * cv::Mat: Result of closing operator
  */
 cv::Mat binary_closing(cv::Mat input, int element_size)
 {
@@ -43,12 +67,20 @@ cv::Mat binary_closing(cv::Mat input, int element_size)
 	cv::Mat working = input.clone();
 	working = binary_operation(working, MODE_BINARY_DILATION, element_size);
 	working = binary_operation(working, MODE_BINARY_EROSION, element_size);
+	
 	return working;
 }
 
 /*
- * Perform binary dilation or erosion using a single channel input Matrix and square symmetrical structuring element
- * Returns a one channel image matrix
+ * Perform binary dilation or erosion using a square symmetrical structuring element
+ * 
+ * Arguments:
+ * cv::Mat        input: Input image matrix
+ *     int         mode: Processing mode from cl_own.h
+ *     int element_size: Radius of structuring element
+ *
+ * Returns:
+ * cv::Mat: Result of operation
  */
 cv::Mat binary_operation(cv::Mat input, int mode, int element_size)
 {
@@ -57,21 +89,18 @@ cv::Mat binary_operation(cv::Mat input, int mode, int element_size)
 		//Setup output
 		cv::Mat output(input.rows, input.cols, CV_8UC1, cv::Scalar(0));
 		
-		cout << "Performing binary " << (mode == MODE_BINARY_DILATION ? "dilation" :  "erosion") 
-			 << "..." << endl;
+		cout << "Performing binary " << (mode == MODE_BINARY_DILATION ? "dilation" :  "erosion") << "..." << endl;
 
 		//Get metadata
 		uchar 
 			*data = (uchar*)input.data,
-			*out_data = (uchar*)output.data
-		;
+			*out_data = (uchar*)output.data;
 		int 
 			input_channels = input.channels(),
-			output_channels = output.channels()
-		;
+			output_channels = output.channels();
 
 		//Middle element 5 - 1 = 4,  / 2 = 2,  + 1 = 3
-		int half = (element_size - 1) / 2;	//See log book 10/2/14
+		int half = (element_size - 1) / 2;
 
 		//For all X x Y pixels
 		int result = 0;

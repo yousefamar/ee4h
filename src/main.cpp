@@ -14,6 +14,15 @@
 
 using namespace std;
 
+/*
+ * Process an image and look for cards to classify
+ *
+ * Arguments:
+ * cv::Mat input: Whole image to find cards
+ *
+ * Returns:
+ * int: Any error code, else 0 (exit success)
+ */
 int process_image(cv::Mat input)
 {
 	cv::Size input_size = input.size();
@@ -23,9 +32,8 @@ int process_image(cv::Mat input)
 	{
 		//Show image details
 		cout << "Image is " << input_size.width << " by " << input_size.height << " pixels." << endl << endl;
-		//cv::imshow("Input", input);
 
-		//Hack to deal with super large, hi-res images
+		//Deal with super large, hi-res images
 		if (input_size.width > 1000)
 			cv::resize(input, input, cv::Size(1000, 1000*input_size.height/input_size.width));
 		if (input_size.height > 500)
@@ -62,7 +70,7 @@ int process_image(cv::Mat input)
 			}
 
 			//Find suit
-			find_suit_sym(card, 0.95F);
+			find_suit_sym(card);
 		}
 
 		//Show results until key press
@@ -81,16 +89,16 @@ int process_image(cv::Mat input)
 }
 
 
-/**
-  * Program entry point.
-  *
-  * Arguments
-  *    int argc: Number of arguments
-  * char** argv: Array of arguments: [1] - Image path to open
-  *
-  * Returns
-  * int: Error code or 0 if no error occured
-  */
+/*
+ * Program entry point.
+ *
+ * Arguments
+ *    int argc: Number of arguments
+ * char** argv: Array of arguments: [1] - Image path to open
+ *
+ * Returns
+ * int: Error code or 0 if no error occured
+ */
 int main(int argc, char **argv)
 {
 	cout << endl << "----------------------------------------------" << endl
@@ -107,6 +115,7 @@ int main(int argc, char **argv)
 
 	cv::Mat input;
 
+	//Get from webcam?
 	bool from_cam = !strcmp(argv[1], "--cam"), should_quit = false;
 	
 	if (argc > 2) {
@@ -114,6 +123,7 @@ int main(int argc, char **argv)
 		multi_mode = !strcmp(argv[2], "--multi");
 	}
 	
+	//Image aquisition loop
 	do
 	{
 		if(!from_cam)
@@ -148,6 +158,7 @@ int main(int argc, char **argv)
 			cv::destroyWindow("Webcam");
 		}
 
+		//Card classification!
 		if (process_image(input))
 			return EXIT_FAILURE;
 

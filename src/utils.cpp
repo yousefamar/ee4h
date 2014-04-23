@@ -2,7 +2,6 @@
 | Utils file for EE4H Assignment						         		 |
 |																		 |
 | Authors: Yousef Amar and Chris Lewis									 |
-| Last Modified: 03/02/2014												 |
 |																		 |
 \************************************************************************/
 
@@ -95,17 +94,31 @@ int min(int a, int b)
   return a < b ? a : b;
 }
 
-/**
-  * TODO: Docs
-  */
+/*
+ * Manhattan Distance calculation
+ *
+ * Arguments
+ * int x1: Point 1 X co-ordinate
+ * int x2: Point 2 X co-ordinate
+ * int y1: Point 1 Y co-ordinate
+ * int y2: Point 2 Y co-ordinate
+ *
+ * Returns:
+ * int: Distance between points 1 and 2
+ */
 int dist_manhattan(int x1, int x2, int y1, int y2)
 {
-  // TODO: Check abs' speed
   return abs(x2-x1 + y2-y1);
 }
 
 /*
  * Return true if a point is in the image
+ * 
+ * Arguments
+ * int      x: X co-ordinate
+ * int      y: Y co-ordinate
+ * int  width: Width of bounds
+ * int height: Height of bounds
  */
 bool is_in_image(int x, int y, int width, int height)
 {
@@ -114,6 +127,12 @@ bool is_in_image(int x, int y, int width, int height)
 
 /*
  * Round to nearest integer
+ *
+ * Arguments:
+ * double d: Value to round
+ *
+ * Returns:
+ * double: Nearest integer in double format
  */
 double round(double d)
 {
