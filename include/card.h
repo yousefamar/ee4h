@@ -15,7 +15,7 @@
 
 class Card {
 public:
-	//Constants - Maybe not the best place
+	//Suit enumeration
 	enum Suit {
 		CLUBS,
 		DIAMONDS,
@@ -24,6 +24,7 @@ public:
 		UNKNOWN_SUIT
 	};
 
+	//Picture card rank enumeration
 	enum PictureRank {
 		RANK_JACK,
 		RANK_QUEEN,
@@ -32,6 +33,7 @@ public:
 		UNKNOWN_RANK
 	};
 
+	//Suit colour enumeration
 	enum Colour {
 		BLACK,
 		RED,
@@ -59,7 +61,7 @@ public:
 	Card();
 	Card(cv::Mat);
 
-	//Methods
+	//Functions
 	void set_mat(cv::Mat mat);
 	void init();
 	void show();
