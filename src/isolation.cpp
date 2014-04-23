@@ -9,14 +9,22 @@
 
 using namespace std;
 
+//Improves CLAHE performance
 bool multi_mode = false;
 
-//Configuration, have as #defines instead?
+//Configuration
 int thresh_lower = 150, thresh_upper = 255, thresh_increment = 2;
 float min_square_diff = 0.1F;
 
-/**
- * TODO: Docs
+/*
+ * Square diff operation
+ *
+ * Arguments:
+ * vector<cv::Point> square1: First square
+ * vector<cv::Point> square2: Second square
+ *
+ * Returns:
+ * int: Manhattan distance between the two squares
  */
 int square_diff(vector<cv::Point> square1, vector<cv::Point> square2)
 {
@@ -26,7 +34,16 @@ int square_diff(vector<cv::Point> square1, vector<cv::Point> square2)
 			+ dist_manhattan(square1[3].x, square2[3].x, square1[3].y, square2[3].y);
 }
 
-// Credit to http://stackoverflow.com/questions/2049582/how-to-determine-a-point-in-a-triangle for the algorithm
+/*
+ * Points in triangle operation
+ * Credit to http://stackoverflow.com/questions/2049582/how-to-determine-a-point-in-a-triangle for the algorithm
+ *
+ * Arguments:
+ * cv::Point p: Point
+ * cv::Point p0: Triangle point 0
+ * cv::Point p1: Triangle point 1
+ * cv::Point p2: Triangle point 2
+ */
 bool point_in_triangle(cv::Point p, cv::Point p0, cv::Point p1, cv::Point p2)
 {
 	float area = 0.5F * (-p1.y * p2.x + p0.y * (-p1.x + p2.x) + p0.x * (p1.y - p2.y) + p1.x * p2.y);
@@ -37,14 +54,27 @@ bool point_in_triangle(cv::Point p, cv::Point p0, cv::Point p1, cv::Point p2)
 	return s > 0.0F && t > 0.0F && (s + t) < 2.0F * area * sign;
 }
 
+/*
+ * Point in quad operation
+ * (See above)
+ * 
+ * Arguments:
+ *         cv::Point p: Point
+ * vector<cv::Point> q: Vector of points in quad
+ */
 bool point_in_quad(cv::Point p, vector<cv::Point> q) {
 	return point_in_triangle(p, q[0], q[1], q[2]) || point_in_triangle(p, q[2], q[3], q[0]);
 }
 
+/*
+ * Quad in quad operation
+ * (See above)
+ * 
+ * Arguments:
+ * vector<cv::Point> inner: Inner quad
+ * vector<cv::Point> outer: Outer quad
+ */
 bool quad_in_quad(vector<cv::Point> inner, vector<cv::Point> outer) {
-	//if (inner.size() != 4 || outer.size() != 4)
-	//	//ain't no quads
-
 	int vertexCount = 0;
 
 	for (int i = 0; i < 4; ++i)
@@ -62,8 +92,8 @@ bool quad_in_quad(vector<cv::Point> inner, vector<cv::Point> outer) {
  * Find the number of squares in an image.
  * 
  * Arguments
- *                cv::Mat image:     The image input
- * vector<vector<Point>>& squares:   The array of squares
+ *                cv::Mat     image:     The image input
+ * vector<vector<Point>>&   squares:   The array of squares
  *                    int threshold: Threshold for finding a quad
  */
 void find_squares(cv::Mat image, vector<vector<cv::Point> >& squares, int threshold)
@@ -277,6 +307,16 @@ int find_cards(cv::Mat input, vector<Card>* cards)
 	return 0;
 }
 
+/*
+ * Perform crop by XOR
+ *
+ * Arguments:
+ * cv::Mat mat1: First matrix
+ * cv::Mat mat2: Second matrix
+ *
+ * Returns:
+ * cv::Rect: Rect of cropped area
+ */
 cv::Rect xor_crop(cv::Mat mat1, cv::Mat mat2)
 {
 	cv::Mat xord = mat1 ^ mat2;
@@ -298,6 +338,12 @@ cv::Rect xor_crop(cv::Mat mat1, cv::Mat mat2)
 	return cv::boundingRect(points);
 }
 
+/*
+ * Find the rank and suit symbols and isolate to matrices
+ *
+ * Arguments:
+ * Card* card: Pointer to card matrix to examine
+ */
 void find_symbols(Card *card) {
 	std::vector<cv::Mat> blobs;
 

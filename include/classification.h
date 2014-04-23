@@ -22,8 +22,7 @@ void detect_colour(Card *card);
 void detect_type(Card *card);
 void detect_value_number(Card *card);
 void detect_value_picture(Card *card);
-int find_suit_scaled(Card *card, float minimum_perc, int max_scale);
-void find_suit_sym(Card *card, float minimum_perc);
+void find_suit_sym(Card *card);
 float hit_or_miss_score(cv::Mat img, cv::Mat se_image);
 
 #endif
