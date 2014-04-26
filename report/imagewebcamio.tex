@@ -1,0 +1,61 @@
+		The loading of images to analyse from either disk or webcam is one of the most basic uses of the OpenCV library. To load in image from a file on a local or network hard disk drive, the \code{cv::imread()} function is called with the path to the image and read mode supplied as arguments. This is shown in the code segment below for an image path supplied as the second command line argument to be read as a colour image:
+
+		\begin{lstlisting}
+
+cv::Mat input = cv::imread(argv[1], CV_LOAD_IMAGE_COLOR);
+		\end{lstlisting}
+
+		Once this call has been made, the image matrix is checked for integrity by examining the width and height of the \code{cv::Mat} returned from \code{cv::imread()}:
+
+		\begin{lstlisting}
+
+cv::Size input_size = input.size();
+
+//Check size is greater than zero
+if(input_size.width > 0 && input_size.height > 0)
+{
+	...
+}
+		\end{lstlisting}
+
+		If this check succeeds, the image is valid and is passed on to \code{process_image()} for further processing and eventual classification. Otherwise the program terminates with a suitable error message:
+		
+		\begin{lstlisting}
+
+if (process_image(input))
+	return EXIT_FAILURE;
+		\end{lstlisting}
+
+		If the `--cam' command line argument is supplied, the image is instead loaded from a webcam frame during live capture. A loop is entered displaying images from the webcam until the space bar is pressed, the loop is exited and the image processed as shown previously. This decision process is shown below:
+
+		\begin{lstlisting}
+
+bool from_cam = !strcmp(argv[1], "--cam");
+
+...
+//Open a webcam source
+cv::VideoCapture cap(CV_CAP_ANY);
+cv::waitKey(1000);
+
+if(!cap.isOpened())
+{
+	cerr << "Unable to access webcam" << endl;
+	return -3;  //Incorrect arguments code
+}
+
+cout << "Press space to take a photo" << endl;
+
+char key;
+do
+{
+	key = cvWaitKey(10);
+
+	cap >> input;
+
+	cv::imshow("Webcam", input);
+
+	// Break out of loop if Space key is pressed
+} while (char(key) != 32);
+		\end{lstlisting}
+
+		Once the isolation and classification of any cards present in the captured webcam frame is complete, the user can opt to capture another frame or exit the program.
