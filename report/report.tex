@@ -75,20 +75,130 @@
 \setcounter{page}{1}
 
 \parskip 2mm
-
+% TODO: Project man section?
 \section{Introduction}
 	\input{intro.tex}
 
 \pagebreak
 \section{Review}
+	\label{sec:review}
 	\subsection{Identify sub-tasks}
-		(Flowhart breakdown from final PPT?)
+		% TODO: Include realistic applications
 	\subsection{Review of Potential Methods}
-		(existing literature (HIPR2?))
-		Should each include limitations if not chosen, justification in 3.2
 		\subsubsection{High-level Isolation}
-			Contours
-			Perspective transform (That OpenGL citation?)
+			For any realistic commercial application, the playing card recognition system would, for all practical purposes, need to isolate individual playing cards from an input image for later classification. To do this, there exist a number of well known computer vision techniques and algorithms.
+
+			Short of using a Haar classifier blanker solution, the technique most people would reflexively turn to is the Hough Transform \autocite{duda1972use} to detect card edges. Practically, this would be combined with a generic edge detection algorithms such as the Canny Edge Detection \autocite{canny1986computational}.
+
+			% TODO: Define hysteresis
+			Canny Edge Detection is particularly useful for increasing contrast and removing image noise; a process that would no doubt come in handy for isolating playing cards. A precursor to Canny Edge Detection is to blur the input image (converted to greyscale of course). This has the effect of removing specular noise. Then, areas of the image where the intensity changes with a steep gradient are marked. From these, only local maxima are preserved. A double threshold is then applied to the intensities of these local maxima that results in an image with strong and weak edges alike. Finally all edges that are not 8-connected to strong edge blobs are removed by hysteresis.
+
+			% TODO: List parameters
+			Indeed, applying Canny Edge Detection to an image of playing card is not novel and seems to have good results. Figure~\ref{fig:cannyimg} depicts an example of doing so on a test image.
+
+			\begin{figure}[H]
+				\centering
+				\begin{subfigure}[b]{0.6\textwidth}
+					\centering
+					\includegraphics[width=\textwidth]{numtopred}
+					\caption{}
+				\end{subfigure}
+			\end{figure}
+			\begin{figure}[H]
+				\ContinuedFloat
+				\centering
+				\begin{subfigure}[b]{0.6\textwidth}
+					\centering
+					\includegraphics[width=\textwidth]{canny}
+					\caption{}
+				\end{subfigure}
+				\caption{An example of Canny edge detection (b) as applied to test image (a)}
+				\label{fig:cannyimg}
+			\end{figure}
+
+			Now that the image is binary and the edges within distinct, using the Hough Transform to extract card edges is trivial. Edges within the card are not in the shape of lines and so only a card's edges would be detected.
+
+			The Hough Transform works in an ingenious manner; in a nutshell, each white pixel in the binary image is treated as a data point. For each of these pixels, a number of lines are drawn through them at differing angles. Then for each line at a different angle, the perpendicular distance to the origin is measured. This is then plotted in a ``Hough space'' graph. The points of intersection denote a line that intersects many points in the original image. 
+
+			\begin{figure}[H]
+				\centering
+				\begin{subfigure}[b]{0.55\textwidth}
+					\centering
+					\includegraphics[width=\textwidth]{hough1}
+					\caption{}
+				\end{subfigure}
+				\begin{subfigure}[b]{0.4\textwidth}
+					\centering
+					\includegraphics[width=\textwidth]{hough2}
+					\caption{}
+				\end{subfigure}
+				\caption{The first step of the Hough transform (a) and a Hough-space graph (b); Source: Wikipedia, Hough Transform}
+				\label{fig:houghmath}
+			\end{figure}
+
+			Intuitively, one can tell how this approach can also be expanded to curves and other shapes. In practice, the Hough transform is done at a higher angular resolution and the results are stored in a matrix where cell values correspond to the number of points a line at a given angle (columns are angle and rows are distance) intersect with. The pink point in Figure~\ref{fig:houghmath} would be a cell with the value 3. This matrix would then be normalised to 255, if it was to be displayed, or not in which case the brightest points are the lines that intersect with the most points, or in this case, line up with the straightest edges. It becomes only a matter of selecting the ``brightest'' lines, or the ones that match the straightest edges. In the playing card scenario this would be the top four lines for one card. The results of this being tested can be seen in Figure~\ref{fig:hough}.
+
+			\begin{figure}[H]
+				\centering
+				\includegraphics[width=0.6\textwidth]{hough}
+				\caption{The results of a Hough transform on the Canny edges in Figure~\ref{fig:cannyimg}}
+				\label{fig:hough}
+			\end{figure}
+
+			There are a number of limitations this method poses however to this application in particular. First of all, one would obviously have to programmatically calculate the points of intersection for all the four lines that the hough transform detected; the point of intersection would be a card's four corners, which can be used to construct the quadrilateral shape for subsequent perspective transformation.
+
+			However, what if there is more than one card in the image? How would the system know how many lines to pick out and which card they belong to? If it is a question of Hough-space thresholding and distance measures for determining which lines belong to which card, then what would happen if you through a window in the mix, or anything with edges and lines for that matter? Simply using the Hough transform may not be the most expandable solution for this purpose. These same limitations apply with corner detection algorithms.
+
+			~\\
+
+			Instead, a much more promising technique is that of finding contours through border following \autocite{suzuki1985topological}. Once a preprocessed binary image is constructed of the card input image, the darker areas around the image edges will have been thresholded out. To get around differing lighting conditions, the contours can be found for multiple binary threshold levels and compared. One problem --- as is discussed later in further detail \secref{sec:isolation} --- would be if the image itself has inconsistent lighting in different parts, such as specular reflection on a corner of the card, but a matte ambient lighting on the opposite corner.
+
+			To get around this Contrast Limited Adaptive Histogram Equalisation (CLAHE) \autocite{pizer1987adaptive} can be utilised. This differs from standard Adaptive Histogram Equalisation (AHE) from the fact that the contrast limiting process prevents noise from being over-amplified locally within any given window as is often characteristic with standard AHE. To do this, the top of a neighbourhood's histogram is clipped at a threshold and redistributed uniformly among the histogram bins.
+
+			It is similar in the fact that instead of equalising an entire image and simply stretching its histogram out, the image is tiled into windows that each have histogram equalisation applied to them locally. This has the effect --- as will become evident in later sections of this report --- that bright areas of the image do not become washed out and darker areas darkened out. At the same time the noise amplification issue is solved through contrast limiting.
+
+			After binary thresholding, the card contours can be detected. One way of doing this is by computing the convex hull. A faster way is border following (by recursively visiting neighbour pixels that are on an edge) complimented by iteratively approximating a polygon within the computed polygon that has less vertices given a minimum precision. One well known technique for doing this (reducing the vertices in a polygon but still keeping it relatively similar to the original polygon) is the Ramer–Douglas–Peucker algorithm \autocite{ramer1972iterative}, \autocite{douglas1973algorithms}.
+
+			This algorithm, expressed in plain English, works as follows. Given a curve made up of multiple points, you begin on the end points and draw a line between them. Then, you find the point that is furthest away from that line. That becomes the new edge point and the process is repeated for that curve segment. This continues until you are left with a line segment with only three points. The middle point is removed, simplifying the curve. This is done recursively until all line segments have had the same process applied to them. The result is that the final curve is simpler but still similar to the original curve. In the case of playing cards, this process would be applied to the card contours until the contour polygon only has four sides left. This polygon, or quadrilateral rather, is the shape that bounds the playing card image.
+
+			Any of this would however need to be coupled with additional checks and custom filtration algorithms that are discussed in detail later \secref{sec:isolation}.
+
+			~\\
+
+			Once the contour quad is computed, the next step would be to apply a perspective transform to the area of the image that that quad encloses. Unlike an affine transform, which can apply translation, rotation, scale, and skew/shear, the perspective transform can also apply depth. In other words, a square can be turned into a trapezoid with a perspective transform while an affine can only turn it into a parallelogram.
+
+			The perspective transform is used extensively in computer graphics to project 3D graphics onto the 2D screen plane. This gives a scene depth where things get smaller the further away they are, projected from a single point of projection, unlike an orthographic projection were things are projected along parallel lines.
+
+			A simple example would be for instance projecting an image on the plane $z = 4$ (assume a right-handed coordinate system where the z-axis points outwards). If the point of projection is at the origin, then intuitively one expects the projection onto that plane for points where $z > 4$ that line up relative to the origin to project onto the same point. In order to operate with projective geometry, homogeneous coordinates must be used; a dimension up from affine. The perspective transformation can be expressed as:
+
+			\begin{equation}
+				P =
+				\begin{bmatrix}
+					1 & 0 & 0 & 0\\
+					0 & 1 & 0 & 0\\
+					0 & 0 & 1 & 0\\
+					0 & 0 & 1 & 0
+				\end{bmatrix},\qquad
+				\begin{bmatrix}
+					x_c\\
+					y_c\\
+					z_c\\
+					w_c
+				\end{bmatrix}
+				= P
+				\begin{bmatrix}
+					x\\
+					y\\
+					z\\
+					w
+				\end{bmatrix}
+			\end{equation}
+
+			where P is the perspective matrix that projects to the plane $z = 1$. However, in order make sure that the homogeneous component $w$ is equal to 1 to map back to the real plane, $(x_c, y_c, z_c)$ must additionally be divided by $w_c$; a so called perspective divide.
+
+			Indeed, if $(x_1, y_1, z_1, w_1) = (2, 2, 2, 1)$ and $(x_2, y_2, z_2, w_2) = (4, 4, 4, 1)$ were to be projected onto $z = 1$, the result of the above transformation would give $(x'_1, y'_1, z'_1) = (1, 1, 1)$ and $(x'_2, y'_2, z'_2) = (1, 1, 1)$ which makes perfect sense intuitively, as the first point occludes the second from the perspective of the origin as projected onto $z = 1$.
+
+			The perspective transform is crucial for deforming a pixel grid as enclosed by an arbitrary quadrilateral into a rectangle. Of course perspective transformation matrices can include any manner of transformations to project onto any plane, yet the result can always be a straightened card image matrix.
 		\subsubsection{Low-level Classification}
 			Once a card has been identified in the input image, its perspective transformed and isolated to a separate image, it must be classified according to suit and rank. In order to do this, techniques are available from the field of Mathematical Morphology that allow the modification of an image to enhance areas of interest as a form of pre-processing.
 
@@ -207,36 +317,76 @@
 \pagebreak
 \section{Proposed Method}
 	\subsection{Logical progression from whole image to classification}
+		\input{flowchart.tex}
 		Program flow, flowchart
 	\subsection{Justify each stage’s techniques}
 		Identify strengths and weaknesses
 \pagebreak
 \section{Implementation}
-	Justify custom implementations vs. OpenCV pre-made function
-	\^(interleaved and when relevant)
+	\label{sec:implementation}
 	\subsection{Image IO/Webcam IO}
 		\input{imagewebcamio.tex}
-
 	\subsection{Card Isolation}
-
+		\label{sec:isolation}
 		Once an image is passed in as an input, the first step is to find one or more cards in the image and, if any were found, extract them from the image and prepare them for processing. This is done in a number of steps.
 
 		\subsubsection{Card Detection}
-
-			In order to detect cards within the image, the function \code{find_cards()} in \source{isolation.cpp}{app:maincpp} is called from \source{main.cpp}{app:maincpp}. It takes in an empty vector of objects of type \code{Card} as an inputs which it then populates with the detected cards for later processing.
+			In order to detect cards within the image, the function \code{find_cards()} in \source{isolation.cpp}{app:isolationcpp} is called from \source{main.cpp}{app:maincpp}. It takes in an empty vector of objects of type \code{Card} as an inputs which it then populates with the detected cards for later processing.
 
 			Cards are detected by finding quadrilaterals with a method not unlike the one used in the sample file \emph{squares.cpp} in the official OpenCV repository \autocite{squares} albeit with some decisive distinctions. The backbone of the algorithm is the OpenCV function \code{cv::findContours()}. This function retrieves contours from a binary image using the algorithm developed by \textcite{suzuki1985topological} via border following. It was decided not to implement a custom function since it would not have added any flexibility or speed advantage over the OpenCV implementation. Indeed it would only have increased code complexity.
 
-			% TODO: Label "High-level Isolation"
-			This function requires a binary image as an input. As such, input images undergo a series of processing before hand. First, they are converted to greyscale. Then CLAHE --- as explained previously \secref{sec:isolation} --- is applied to these images. The size of the CLAHE window varies between 32x32 and 28x28 pixels depending on if the user has specified with the \code{--multi} command line flag that the program should run in multiple card mode. CLAHE operations using OpenCV functions run on the GPU through CUDA; they cannot be optimised by writing custom code for CLAHE without utilising CUDA, which would only introduce system-level bugs that have been long since resolved within OpenCV's code base. For this reason, the OpenCV CLAHE implementation was used.
+			This function requires a binary image as an input. As such, input images undergo a series of processing before hand. First, they are converted to greyscale. Then CLAHE --- as explained previously \secref{sec:isolation} --- is applied to these images. The size of the CLAHE window varies between 32x32 and 28x28 pixels depending on if the user has specified with the \code{--multi} command line flag that the program should run in multiple card mode. CLAHE operations using OpenCV functions run on the GPU through CUDA; they cannot be optimised by writing custom code for CLAHE without utilising CUDA, which would only introduce system-level bugs that have been long since resolved within OpenCV's code base. For this reason, the OpenCV CLAHE implementation was used. Figure~\ref{fig:clahe} shows a side by side comparison of normal HE and CLAHE on an image of a playing card that has a bright top-right corner:
 
-			% TODO: IMAGES
+			\begin{figure}[H]
+				\centering
+				\begin{subfigure}[b]{0.5\textwidth}
+					\centering
+					\includegraphics[width=\textwidth]{pers2}
+					\caption{}
+				\end{subfigure}
+			\end{figure}
+			\begin{figure}[H]
+				\ContinuedFloat
+				\centering
+				\begin{subfigure}[b]{0.4\textwidth}
+					\centering
+					\includegraphics[width=\textwidth]{he}
+					\caption{}
+				\end{subfigure}
+				\qquad
+				\begin{subfigure}[b]{0.4\textwidth}
+					\centering
+					\includegraphics[width=\textwidth]{clahe}
+					\caption{}
+				\end{subfigure}
+				\caption{HE (b) and CLAHE (c) as applied to a test image (a)}
+				\label{fig:clahe}
+			\end{figure}
 
 			After performing CLAHE, the image is blurred. The amount of blur is set as a function of it image's dimensions. More specifically \code{(image_size.width + image_size.height)>>8} or in plain English, the perimeter of the image divided by 512. This prevents small images from losing too much detail through blurring while large images do not remain too sharp. Blurring is done to filter out noise for the next step.
 
-			The resulting image is then converted to binary using the threshold parameter before \code{cv::findContours()} is called. Contours are found for processed binary images for thresholds ranging from 150 to 255 (both inclusive) in increments of 2. This bright range was experimentally determined to be the best to create binary images from.
+			The resulting image is then converted to binary using the threshold parameter before \code{cv::findContours()} is called. Contours are found for processed binary images for thresholds ranging from 150 to 255 (both inclusive) in increments of 2. This bright range was experimentally determined to be the best to create binary images from. Figure~\ref{fig:clahebin} show an example of binary thresholding at only one value (210) on the pure HE image, and the CLAHE image.
 
-			The found contours are then approximated into geometry using with the function \code{cv::approxPolyDP()} and then go through a number of rigorous checks. Contours that do not pass these checks are discarded and not added to the final contours collection that the function populates. These include:
+			\begin{figure}[H]
+				\centering
+				\begin{subfigure}[b]{0.4\textwidth}
+					\centering
+					\includegraphics[width=\textwidth]{hebin}
+					\caption{}
+				\end{subfigure}
+				\qquad
+				\begin{subfigure}[b]{0.4\textwidth}
+					\centering
+					\includegraphics[width=\textwidth]{clahebin}
+					\caption{}
+				\end{subfigure}
+				\caption{Binary thresholding at 210 on the HE (a) and CLAHE (b) of the test image in Figure~\ref{fig:clahe}}
+				\label{fig:clahebin}
+			\end{figure}
+
+			Notice how The HE image over-accentuates the bright spot on the top left and casts the rest of the image into darkness. The contours that would be computed for this shape would encroach onto the desk and miss the bottom half of the card entirely. Meanwhile the CLAHE image provides a nice border around the card that can be followed, has no sign of the bright spot ever existing, and leaves the rest of the blobs inconspicuous enough that they can be filtered out.
+
+			The found contours are approximated into geometry using with the function \code{cv::approxPolyDP()} and then go through a number of rigorous checks. Contours that do not pass these checks are discarded and not added to the final contours collection that the function populates. These include:
 
 			\begin{enumerate}
 				\item Does the contour have four corners?\\[4px]
@@ -283,7 +433,6 @@
 			Finally, there is one more processing step that needs to be undertaken before a detected card is deemed worthy enough to join its brethren in the detected card vector and \code{find_cards()} can return\ldots
 
 		\subsubsection{Rotation Correction}
-
 			One deal-breaking issue was the problem of a sequence of contour quad vertices starting at the wrong corner and, as a direct consequence, causing the final card Mat to be perspective transformed incorrectly. This problem became evident became evident when processing cards where the top-most corner in the image is numbered, such as the lower examples in figure~\ref{fig:rot}; the card could just be at a very strange perspective that projects to that shape.
 
 			\begin{figure}[H]
@@ -300,22 +449,58 @@
 
 			The corner whiteness for this new Mat is also measured, and compared against old corner whiteness. If it has a lesser corner whiteness measure than the old, that means that the old card Mat was indeed oriented incorrectly and so the new one is used instead. If the opposite holds true, then the first overall whiteness threshold was passed incorrectly (perhaps due to some bizarre specular lighting that the CLAHE did not quite catch) and so the new mat is discarded and the old one's usage is continued as if nothing ever happened.
 
-			At long last, the \code{Card} vector contains all detected cards --- to a high degree of accuracy --- ready for processing and classification by the rest of the program, and the function can return.
-
+			At long last, the \code{Card} vector contains all detected cards --- to a high degree of accuracy --- ready for individual processing and classification by the rest of the program, and the function can return.
 	\subsection{Colour Detection}
 		\input{colourdet.tex}
-
 	\subsection{Type Detection}
-	\subsection{Symbol/Rank symbol Isolation}
-	\subsection{Number Detection}
-		\input{numdet.tex}
+		\label{sec:typedet}
+		The next step is to figure out if a card is a picture or number type. This is particularly crucial for the branching down the pipeline in which picture card rank is detected with one algorithm while number card rank is detected with another \secref{sec:numdet}.
 
+		Fortunately, with standard brand Bicycle\textregistered poker cards --- the most common playing cards in the world --- detecting a card's type is not very difficult. Figure~\ref{fig:picture} shows an example of a picture card. Notice how the picture is completely boxed in (also refer to \ref{fig:innercont}).
+
+		\begin{figure}[H]
+			\centering
+			\includegraphics[width=0.4\textwidth]{picture}
+			\caption{The queen of spades picture card}
+			\label{fig:picture}
+		\end{figure}
+
+		The same function that was used for finding card contours earlier \secref{sec:isolation} in \source{isolation.cpp}{app:isolationcpp}, \code{find_quads()}, is also applied to a card's image matrix from within the function \code{detect_type()} in \source{classification.cpp}{classificationcpp}. If a single quad contour with an area large enough for it not to be the ace of diamond's diamond is found within the card, it is classified as a picture card and that information is stored the card's object of type \code{Card}.
+	\subsection{Value/Rank and Suit Symbol Isolation}
+		Since pure HoM was found to (unsurprisingly) be very time intensive, even after cutting the templates to be matched in half via colour detection, a shortcut needed to be found for rank and suit detection. The solution is to locate and isolate the value/rank symbol and the suit symbol and, once scaled, apply HoM to just those subimages.
+
+		This is done in a simple yet extremely effective manner at the bottom of \source{isolation.cpp}{isolationcpp} starting with the function \code{find_symbols()}, which, like \code{find_cards()}, is called from \source{main.cpp}{maincpp}.
+
+		The algorithm developed specifically for this purpose can be described as follows:
+
+		\begin{enumerate}
+			\item For each pixel in card's binary image matrix within the bounds of the top left corner rectangle search space (green in figure~\ref{fig:symfind}):
+			\begin{enumerate}
+				\item If a pixel is black, clone the card's binary image matrix and flood-fill the blob out of the original (to not repeat the operation on the same blob again).
+				\item Perform an XOR crop --- with the clone, and the original card's binary image matrix with the blob flood-filled white as inputs --- to get an axis-aligned bounding box (AABB) around the detected blob.
+			\end{enumerate}
+			\item If a blob was found, set the card's value/rank image matrix to the first blob found (the top and leftmost).
+			\item If a blob was found, set the card's suit symbol image matrix to the last blob found (the bottom and leftmost).
+		\end{enumerate}
+
+		The trick here is the XOR crop (\code{xor_crop()} in \emph{isolation.cpp}), a function written explicitly for use in \code{find_symbols()}. The two input images, one with the blob in question and one without, are XORed. The result of this is an image matrix with the same dimensions as the card's image matrix with \emph{only} the blob remaining in it. As a result, if you find the bounding rectangle around that blob (sides aligned with the image), you now have the position and dimensions of a box that encloses the blob (blue in \ref{fig:symfind}). This information is used to extract the part of the original card image matrix that contains this blob (either the value/rank symbol or the suit symbol) into its own little image matrix. These are displayed side by side in the bottom right of the final results window \secref{sec:resultsout} for debug purposes.
+
+		\begin{figure}[H]
+			\centering
+			\includegraphics[width=0.4\textwidth]{symfind}
+			\caption{An example of a the results window of a single picture card image}
+			\label{fig:symfind}
+		\end{figure}
+
+		These mats are only ever used for rank detection (J,Q,K,A), not value detection (2--10 inclusive) so there is no need to handle exceptional cases such as the fact that the value symbol `10' has two blobs instead of one. The isolated symbols can now be used for rank and suit classification.
+	\subsection{Value and Rank Detection}
+		\label{sec:numdet}
+		\input{numdet.tex}
 	\subsection{Suit Symbol Detection}
 		\input{suitdet.tex}
-
 	\subsection{Results Output}
+		\label{sec:resultsout}
 		\input{gui.tex}
-
 \pagebreak
 \section{Evaluation}
 	\subsection{Test images, increasing complexity}
@@ -385,43 +570,3 @@
 			225 & 52 & 148 & 137 & 111
 		\end{bmatrix}
 	\end{equation*}
-
-	% Define block styles
-	\tikzstyle{decision} = [diamond, draw, fill=blue!20, text badly centered, inner sep=0pt, text width=4em, font=\tiny]
-	\tikzstyle{process} = [rectangle, draw, fill=blue!20, text centered, rounded corners, text width=3em, font=\tiny]
-	\tikzstyle{line} = [draw, -latex', font=\tiny]
-	\tikzstyle{cloud} = [draw, ellipse, fill=red!20, minimum height=2em]
-	
-	\begin{figure}[H]
-		\centering
-		\begin{tikzpicture}[node distance = 2cm, auto]
-			% Place nodes
-			\node [process] (imgget) {Get Image from File/Webcam};
-			\node [process, right of=imgget] (cardfind) {Isolate Cards};
-			\node [process, right of=cardfind] (colourdet) {Detect Colour};
-			\node [process, right of=colourdet] (typedet) {Detect Type};
-			\node [process, right of=typedet] (symfind) {Isolate Symbols};
-			\node [decision, right of=symfind] (ispic) {Is Card Picture Type?};
-			\node [process, above right of=ispic] (numdet) {Detect Number};
-			\node [process, below right of=ispic] (rankdet) {Detect Rank};
-			% Enhanced by colour detection
-			\node [process, below right of=numdet] (symdet) {Detect Suit};
-
-
-			% Draw edges
-			\path [line] (imgget) -- (cardfind);
-			\path [line] (cardfind) -- (colourdet);
-			\path [line] (colourdet) -- (typedet);
-			\path [line] (typedet) -- (symfind);
-			\path [line] (symfind) -- (ispic);
-			\path [line] (ispic) -- node {no} (numdet);
-			\path [line] (ispic) -- node [below left] {yes} (rankdet);
-			\path [line] (rankdet) -- (symdet);
-			\path [line] (numdet) -- (symdet);
-			%\path [line,dashed] (expert) -- (init);
-			%\path [line,dashed] (system) -- (init);
-			%\path [line,dashed] (system) |- (evaluate);
-		\end{tikzpicture}
-		\caption{Top-level Flowchart}
-		\label{fig:flowchart}
-	\end{figure}
