@@ -50,3 +50,4 @@ ee4h
 *.synctex.gz
 
 makefile
+out

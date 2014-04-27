@@ -7,7 +7,8 @@
 \usepackage{float}
 \usepackage{chngcntr}
 \counterwithin{figure}{subsubsection}
-\usepackage{caption}
+\counterwithin{table}{section}
+\usepackage[tableposition=top]{caption}
 \usepackage{subcaption}
 \usepackage{tikz}
 \usetikzlibrary{shapes,arrows,positioning}
@@ -47,6 +48,10 @@
 	tabsize=2,
 }
 \usepackage{hyperref}
+\usepackage{pdflscape}
+\usepackage{hhline}
+\usepackage{colortbl}
+\usepackage{makecell}
 \addbibresource{report.bib}
 \graphicspath{{res/images/}}
 
@@ -77,7 +82,6 @@
 \setcounter{page}{1}
 
 \parskip 2mm
-% TODO: Project man section, gantt, git, repo?
 \section{Introduction}
 	\counterwithin{figure}{subsection}
 	\input{intro.tex}
@@ -532,13 +536,141 @@
 	\counterwithin{figure}{subsubsection}
 \pagebreak
 \section{Evaluation}
-	\subsection{Test images, increasing complexity}
-	\subsection{Webcam tests}
-	\subsection{Confusion Matrix}
+	\counterwithin{figure}{section}
+	Due to the nature of this system, evaluation is not very easy to do. In general, there are two high-level phases: card isolation and card classification. With isolation, there are so many possible scenarios and environments (one card, ten cards, fifty cards, partial occlusion, day, night, motion blur etc.) that it is impossible to test for all of them. Therefore, for the purpose of validation. A number of criteria were created.
+
+	\begin{enumerate}
+		\item Every card would be sampled at least four times where it is the only card in the image. The sample size per card is only four due to the fact that card appearance will not change across samples. Only images with single cards are processed due to the fact that there are too many combinations for multiple cards.
+		\item Every sample image is at a resolution of 640x480. Since it was already proven that multiple cards can be recognised, it is assumed that if a single card in a low resolution can be recognised, that the same card can be recognised in an image with multiple cards. 640x480 is a common resolution for cheap webcams. The resolution is fixed to not introduce discrepancies in processing speed/complexities.
+		\item The background is matte green and the setting is a well-lit indoor room. This is to emulate the most realistic practical use case for this system; a casino table. A fixed webcam takes overhead images at a low resolution and at a low height to emulate a realistic scenarios where a high resolution camera can be used to capture multiple cards from a high height above a poker table for instance.
+		\item The minimum 4 samples for any card are captured with the card parallel to the camera, but at differing orientations. These are tilted to the left (e.g. Figure~\ref{fig:webcam}; zoom in if reading digitally), straightened, tilted to the right, and on its side (by 90 degrees). The other orientations are redundant due to a card's symmetry.
+		\item If all four samples are classified correctly, it is assumed that the system will continue to do so for that card and is deemed valid. If the system misclassifies a card four samples in a row, then a total of eight samples are captured instead of four to make sure the misclassification was not a fluke and to increase the sample size somewhat for added accuracy.
+		\item In addition, the system is run on a blank background to test the ability to detect that there are no cards.
+	\end{enumerate}
+
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=0.06\linewidth]{webcam/img0}
+		\includegraphics[width=0.06\linewidth]{webcam/img1}
+		\includegraphics[width=0.06\linewidth]{webcam/img2}
+		\includegraphics[width=0.06\linewidth]{webcam/img3}
+		\includegraphics[width=0.06\linewidth]{webcam/img4}
+		\includegraphics[width=0.06\linewidth]{webcam/img5}
+		\includegraphics[width=0.06\linewidth]{webcam/img6}
+		\includegraphics[width=0.06\linewidth]{webcam/img7}
+		\includegraphics[width=0.06\linewidth]{webcam/img8}
+		\includegraphics[width=0.06\linewidth]{webcam/img9}
+		\includegraphics[width=0.06\linewidth]{webcam/img10}
+		\includegraphics[width=0.06\linewidth]{webcam/img11}
+		\includegraphics[width=0.06\linewidth]{webcam/img12}\\[3px]
+		\includegraphics[width=0.06\linewidth]{webcam/img13}
+		\includegraphics[width=0.06\linewidth]{webcam/img14}
+		\includegraphics[width=0.06\linewidth]{webcam/img15}
+		\includegraphics[width=0.06\linewidth]{webcam/img16}
+		\includegraphics[width=0.06\linewidth]{webcam/img17}
+		\includegraphics[width=0.06\linewidth]{webcam/img18}
+		\includegraphics[width=0.06\linewidth]{webcam/img19}
+		\includegraphics[width=0.06\linewidth]{webcam/img20}
+		\includegraphics[width=0.06\linewidth]{webcam/img21}
+		\includegraphics[width=0.06\linewidth]{webcam/img22}
+		\includegraphics[width=0.06\linewidth]{webcam/img23}
+		\includegraphics[width=0.06\linewidth]{webcam/img24}
+		\includegraphics[width=0.06\linewidth]{webcam/img25}\\[3px]
+		\includegraphics[width=0.06\linewidth]{webcam/img26}
+		\includegraphics[width=0.06\linewidth]{webcam/img27}
+		\includegraphics[width=0.06\linewidth]{webcam/img28}
+		\includegraphics[width=0.06\linewidth]{webcam/img29}
+		\includegraphics[width=0.06\linewidth]{webcam/img30}
+		\includegraphics[width=0.06\linewidth]{webcam/img31}
+		\includegraphics[width=0.06\linewidth]{webcam/img32}
+		\includegraphics[width=0.06\linewidth]{webcam/img33}
+		\includegraphics[width=0.06\linewidth]{webcam/img34}
+		\includegraphics[width=0.06\linewidth]{webcam/img35}
+		\includegraphics[width=0.06\linewidth]{webcam/img36}
+		\includegraphics[width=0.06\linewidth]{webcam/img37}
+		\includegraphics[width=0.06\linewidth]{webcam/img38}\\[3px]
+		\includegraphics[width=0.06\linewidth]{webcam/img39}
+		\includegraphics[width=0.06\linewidth]{webcam/img40}
+		\includegraphics[width=0.06\linewidth]{webcam/img41}
+		\includegraphics[width=0.06\linewidth]{webcam/img42}
+		\includegraphics[width=0.06\linewidth]{webcam/img43}
+		\includegraphics[width=0.06\linewidth]{webcam/img44}
+		\includegraphics[width=0.06\linewidth]{webcam/img45}
+		\includegraphics[width=0.06\linewidth]{webcam/img46}
+		\includegraphics[width=0.06\linewidth]{webcam/img47}
+		\includegraphics[width=0.06\linewidth]{webcam/img48}
+		\includegraphics[width=0.06\linewidth]{webcam/img49}
+		\includegraphics[width=0.06\linewidth]{webcam/img50}
+		\includegraphics[width=0.06\linewidth]{webcam/img51}\\[3px]
+		\caption{An example of canonical webcam samples at a single orientation}
+		\label{fig:webcam}
+	\end{figure}
+
+	With webcam tests and a sample size of 232 images of single cards, card finding succeeded 99.14\% of the time. When it failed, it was on the inner contours of a picture card. Remedies to this are discussed in the further improvements section \secref{sec:improvements}. For card classification confusion matrices are constructed (NB: All confusion matrices have actual classes as rows and predicted classes as columns). The first is one for every single card (52x52 elements). Due to the fact that it is (fortunately) mostly zeroes and that mostly the diagonals contain the full count of samples, the working classes are culled and only the interesting parts are presented for the purpose of this report in Table~\ref{tab:genconf} on page~\pageref{tab:genconf}.
+
+	Additionally a smaller confusion matrix for just suits can be constructed with sample sizes that allow a much more accurate evaluation of performance:
+
+	\begin{table}[H]
+		\centering
+		\caption{The suit confusion matrix}
+		\label{tab:suitconf}
+		\begin{tabular}{| l || l | l | l | l || l |}
+			\hline
+			         & Spades & Hearts & Diamonds & Clubs & Accuracies\\
+			\hhline{|=|=|=|=|=|=|}
+			Spades   & 59\cellcolor[gray]{0.9}  & 0  & 0  & 1\cellcolor[gray]{0.9}  & 93.31\% \\
+			\hline
+			Hearts   & 0  & 52\cellcolor[gray]{0.9}  & 8\cellcolor[gray]{0.9}  & 0  & 84.63\% \\
+			\hline
+			Diamonds & 0  & 0  & 52\cellcolor[gray]{0.9}  & 0  & 100\% \\
+			\hline
+			Clubs    & 0  & 0 & 0  & 52\cellcolor[gray]{0.9}  & 100\% \\
+			\hline
+		\end{tabular}
+	\end{table}
+
+	Notice how colour classification accuracy is at 100\%. Suit accuracy however is not perfect. This data shows that diamonds are always classified as diamonds but some hearts are also classified as diamonds; diamond classification is too aggressive. The same goes for clubs with respect to spades. This would become more clear if the rows and columns in Table~\ref{tab:genconf} were sorted by suit first, then value/rank. That table shows however that type detection (i.e. numbers vs. picture cards) accuracy is at 96.55\%.
+
+	Overall system accuracy is at 93\%. While this is not amazing, bear in mind the small sample sizes per card due to the nature of this system. If for example the sample size was four and 1/4 was classified incorrectly by some fluke or random chance occurrence, already that is a performance of 75\%. With a sample size of 100 per card for instance, the same fluke would be reduced to 1/100 --- or a performance of 99\%.
+
+	Furthermore, 50/52 (96.2\%) of the cards could be successfully identified. The ones that could not were the Ace of Spades --- due to the complex motif in its centre which the system did not have a contingency for --- and the 7 of hearts which had its orientation incorrectly rotated due to one of the heart symbols encroaching in on corner space and confusing the whiteness measure function discussed earlier. Clearly there is some room for improvement under the circumstances, yet all things considered, the system works quite splendidly.
+
+	\pagebreak
+	\begin{landscape}
+		\begin{table}[t]
+			\centering
+			\caption{The abridged general confusion matrix}
+			\label{tab:genconf}
+			\begin{tabular}{| l || l | l | l | l | l | l | l | l | l | l | l | l | l | l | l || l | l |}
+				\hline
+				            & AS & 4S & 7H & 7D & 8D & 9D & 10D & JS & JH & JD & JC & QD & KD & N/A & All Others & Sample Size & Accuracies \\
+				\hhline{|=|=|=|=|=|=|=|=|=|=|=|=|=|=|=|=|=|=|}
+				AS          & 0  & 8\cellcolor[gray]{0.9}  & 0  & 0  & 0  & 0  & 0   & 0  & 0  & 0  & 0  & 0  & 0  & 0   & 0          & 8           &    0\%     \\
+				\hline
+				7H          & 0  & 0  & 0  & 0  & 4\cellcolor[gray]{0.9}  & 2\cellcolor[gray]{0.9}  & 0   & 0  & 0  & 0  & 0  & 2\cellcolor[gray]{0.9}  & 0  & 0   & 0          & 8           &    0\%     \\
+				\hline
+				7D          & 0  & 0  & 0  & 3\cellcolor[gray]{0.9}  & 0  & 0  & 0   & 0  & 0  & 1\cellcolor[gray]{0.9}  & 0  & 0  & 0  & 0   & 0          & 4           &   75\%     \\
+				\hline
+				9D          & 0  & 0  & 0  & 0  & 0  & 3\cellcolor[gray]{0.9}  & 0   & 0  & 0  & 1\cellcolor[gray]{0.9}  & 0  & 0  & 0  & 0   & 0          & 4           &   75\%     \\
+				\hline
+				JS          & 0  & 0  & 0  & 0  & 0  & 0  & 0   & 4\cellcolor[gray]{0.9}  & 0  & 0  & 1\cellcolor[gray]{0.9}  & 0  & 0  & 3\cellcolor[gray]{0.9}   & 0          & 8           &   50\%     \\
+				\hline
+				JH          & 0  & 0  & 0  & 0  & 0  & 0  & 0   & 0  & 3\cellcolor[gray]{0.9}  & 0  & 0  & 0  & 0  & 5\cellcolor[gray]{0.9}   & 0          & 8           & 37.5\%     \\
+				\hline
+				KD          & 0  & 0  & 0  & 0  & 3\cellcolor[gray]{0.9}  & 0  & 1\cellcolor[gray]{0.9}   & 0  & 0  & 0  & 0  & 0  & 4\cellcolor[gray]{0.9}  & 0   & 0          & 8           &   50\%     \\
+				\hline
+				All Others  & 0  & 0  & 0  & 0  & 0  & 0  & 0   & 0  & 0  & 0  & 0  & 0  & 0  & 0   & 0          & 4           &  100\%     \\
+				\hline
+			\end{tabular}
+		\end{table}
+	\end{landscape}
+	\pagebreak
+	\counterwithin{figure}{subsubsection}
 \pagebreak
 \section{Conclusion}
 	\subsection{Summary}
 	\subsection{Improvements}
+	\label{sec:improvements}
 \pagebreak
 \thispagestyle{empty}
 \printbibliography
@@ -580,22 +712,3 @@
 \hrulefill
 
 \end{document}
-
-\section{Review}
-\label{sec:review}
-
-	\begin{equation*}
-		T =
-		\begin{bmatrix}
-			84 & 200 & 16 \\
-			56 & 238 & 11 \\
-			251 & 206 & 203
-		\end{bmatrix}
-		\qquad
-		I =
-		\begin{bmatrix}
-			160 & 40 & 250 & 27 & 114 \\
-			81 & 94 & 14 & 100 & 37 \\
-			225 & 52 & 148 & 137 & 111
-		\end{bmatrix}
-	\end{equation*}
