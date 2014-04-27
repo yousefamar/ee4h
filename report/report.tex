@@ -22,7 +22,7 @@
 \usepackage{mathtools}
 \usepackage{listings}
 \usepackage{color}
-\newcommand{\code}[1]{\colorbox{white}{\lstinline[basicstyle=\ttfamily\color{black}]|#1|} }
+\newcommand{\code}[1]{\lstinline[basicstyle=\ttfamily,breakautoindent=false,postbreak={}]|#1|}
 \definecolor{bluekeywords}{rgb}{0.13,0.13,1}
 \definecolor{greencomments}{rgb}{0,0.5,0}
 \definecolor{redstrings}{rgb}{0.9,0.7,1}
@@ -74,8 +74,7 @@
 \end{abstract}
 %\end{quotation}
 \pagebreak
-
-%\addtocontents{toc}{\protect\thispagestyle{empty}}
+\addtocontents{toc}{\protect\thispagestyle{empty}}
 \tableofcontents
 \thispagestyle{empty}
 \pagebreak
@@ -184,7 +183,7 @@
 					0 & 1 & 0 & 0\\
 					0 & 0 & 1 & 0\\
 					0 & 0 & 1 & 0
-				\end{bmatrix},\qquad
+				\end{bmatrix}\qquad,\qquad
 				\begin{bmatrix}
 					x_c\\
 					y_c\\
@@ -392,7 +391,7 @@
 				\label{fig:clahe}
 			\end{figure}
 
-			After performing CLAHE, the image is blurred. The amount of blur is set as a function of it image's dimensions. More specifically \code{(image_size.width + image_size.height)>>8} or in plain English, the perimeter of the image divided by 512. This prevents small images from losing too much detail through blurring while large images do not remain too sharp. Blurring is done to filter out noise for the next step.
+			After performing CLAHE, the image is blurred. The amount of blur is set as a function of it image's dimensions. More specifically \code{(image_size.width + image_size.height) >> 8} or in plain English, the perimeter of the image divided by 512. This prevents small images from losing too much detail through blurring while large images do not remain too sharp. Blurring is done to filter out noise for the next step.
 
 			The resulting image is then converted to binary using the threshold parameter before \code{cv::findContours()} is called. Contours are found for processed binary images for thresholds ranging from 150 to 255 (both inclusive) in increments of 2. This bright range was experimentally determined to be the best to create binary images from. Figure~\ref{fig:clahebin} show an example of binary thresholding at only one value (210) on the pure HE image, and the CLAHE image.
 
@@ -415,7 +414,7 @@
 
 			Notice how The HE image over-accentuates the bright spot on the top left and casts the rest of the image into darkness. The contours that would be computed for this shape would encroach onto the desk and miss the bottom half of the card entirely. Meanwhile the CLAHE image provides a nice border around the card that can be followed, has no sign of the bright spot ever existing, and leaves the rest of the blobs inconspicuous enough that they can be filtered out.
 
-			The found contours are approximated into geometry using with the function \code{cv::approxPolyDP()} and then go through a number of rigorous checks. Contours that do not pass these checks are discarded and not added to the final contours collection that the function populates. These include:
+			The found contours are approximated into geometry using with the function\\\code{cv::approxPolyDP()} and then go through a number of rigorous checks. Contours that do not pass these checks are discarded and not added to the final contours collection that the function populates. These include:
 
 			\begin{enumerate}
 				\item Does the contour have four corners?\\[4px]

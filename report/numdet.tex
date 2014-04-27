@@ -157,7 +157,7 @@ else
 			\end{lstlisting}
 
 		\subsubsection{Custom HoM Implementation}
-			Mathematical Morphology operations are available as part of the OpenCV library (\code{cv::morphologyEx()}), but as a result of study of the theory and experimental requirements it was felt that a custom implementation of the theory was appropriate. This allows additional modification and parameterisation of the behaviour of required morphological operators. To this end the implementation uses the \code{binary_operation()}, \code{binary_closing()} and \code{hit_or_miss()} functions whose core workings are detailed below:
+			Mathematical Morphology operations are available as part of the OpenCV library\\(\code{cv::morphologyEx()}), but as a result of study of the theory and experimental requirements it was felt that a custom implementation of the theory was appropriate. This allows additional modification and parameterisation of the behaviour of required morphological operators. To this end the implementation uses the \code{binary_operation()}, \code{binary_closing()} and \code{hit_or_miss()} functions whose core workings are detailed below:
 
 			A binary morphological erosion or dilation is performed on a pixel by pixel basis, with each pixel in the input image used as the centre of a symmetrical structuring element. In the case of erosion, the lowest value (any 0s) is set at the output pixel. In the case of dilation the greatest value (any 255s) is set as the output pixel. This is shown in the code segment below:
 
@@ -224,7 +224,7 @@ for(int y = 0; y < input.rows; y++)
 
 			The end result of this operation is a \code{cv::Mat} containing an eroded or dilated image, depending on the mode passed as an argument. 
 
-			The \code{binary_opening()} and \code{binary_closing()} functions simply chain calls to \code{binary_operation()} to implement the order of operations required for each operator. The example of \code{binary_closing()} is shown below:
+			The \code{binary_opening()} and \code{binary_closing()} functions simply chain calls to\\\code{binary_operation()} to implement the order of operations required for each operator. The example of \code{binary_closing()} is shown below:
 
 			\begin{lstlisting}
 
