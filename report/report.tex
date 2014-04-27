@@ -75,15 +75,13 @@
 \setcounter{page}{1}
 
 \parskip 2mm
-% TODO: Project man section?
+% TODO: Project man section, gantt, git, repo?
 \section{Introduction}
 	\input{intro.tex}
 
 \pagebreak
 \section{Review}
 	\label{sec:review}
-	\subsection{Identify sub-tasks}
-		% TODO: Include realistic applications
 	\subsection{Review of Potential Methods}
 		\subsubsection{High-level Isolation}
 			For any realistic commercial application, the playing card recognition system would, for all practical purposes, need to isolate individual playing cards from an input image for later classification. To do this, there exist a number of well known computer vision techniques and algorithms.
@@ -316,16 +314,37 @@
 			Note in the above figure that no markers are present when the SE symbol is obstructed. This prevents a complete match. In this way it is possible to locate a pre-determined symbol inside a larger image by iterating over the entire matrix.
 \pagebreak
 \section{Proposed Method}
-	\subsection{Logical progression from whole image to classification}
-		\input{flowchart.tex}
-		Program flow, flowchart
-	\subsection{Justify each stage’s techniques}
+	\subsection{Sub-task Breakdown}
+		After review of the applicable processing methods in the previous section, the initial task list from Section~\ref{sec:task} can be expanded in more detail. Figure~\ref{fig:flowchart} shows the techniques used at each stage and the resulting classification information obtained:
+
+		\begin{figure}[H]
+			\centering
+			\includegraphics[width=\textwidth]{chris/flowchart}
+			\caption{Sub-task flowchart showing processing stages and methods used for each}
+			\label{fig:flowchart}
+		\end{figure}
+
+		\begin{itemize}
+			\item The first stage is to load the input image, from either a local directory or captured from a connected webcam. 
+			\item Once this is done the individual cards must be extracted from the input image to separate images for later classification. This will be done by using Contrast Limited Histogram Equalisation to compensate for varying illumination and contour detection to locate the card parallelograms. Finally the locations of the contours will be compared to discard duplicates that are too close to each other e.g.: multiple contours for one card as a result of shadows.
+			\item The next stage is to detect the suit colour of the card. This will be used to reduce the search space of the suit itself. For example, a red suit can only logically be a diamonds or hearts card. This helps reduce confusion between two at a later processing stage. This will be achieved by removing the white background and evaluating the red surface area within the two rank and symbol corners. Above a threshold and the suit must be a red one.
+			\item Next the type of the card is determined; a value card (2 to 10) or a picture card (Jack, Queen, King). An Ace is a value one card. If an isolated card image contains a contour within it, it must be a picture card as the inner contour contains the illustration. 
+			\item The suit symbol and rank symbol must be isolated as sub-regions to be used later for isolation. This is done by isolating the corner containing the symbols and searching for blobs from the top. The first encountered will be the rank, and the second below it will be the suit symbol.
+			\item Depending on the result of the Detect Type stage, the card is classified differently depending on its type.  If it is a picture card, the rank symbol is pattern matched against a pre-created template for each of the `J', `Q' and `K' rank symbols and the strongest match will be the rank of that card. However, if the card is a value card, it is classified in a different manner. This will involve removing the suit and rank symbol and using the erosion and closing morphological operations to reduce the remaining suit symbols to a number of countable blobs equal to the value of the card. 
+			\item The final stage of classification is to determine the actual suit of the card. This is done in a similar fashion to determining the rank of a picture card as previously discussed, except the pre-created templates are those of each of the suits; diamonds, clubs, hearts and spades.
+		\end{itemize}
+	\subsection{Justification}
+		Program flow
+		Realistic applications
 		Identify strengths and weaknesses
 \pagebreak
 \section{Implementation}
 	\label{sec:implementation}
+	% Program flow
 	\subsection{Image IO/Webcam IO}
 		\input{imagewebcamio.tex}
+	\subsection{Card Data Structure}
+		\input{card.tex}
 	\subsection{Card Isolation}
 		\label{sec:isolation}
 		Once an image is passed in as an input, the first step is to find one or more cards in the image and, if any were found, extract them from the image and prepare them for processing. This is done in a number of steps.
