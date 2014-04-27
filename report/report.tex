@@ -434,35 +434,35 @@
 
 			Once all contours have been iterated through and the ones that fail these criteria have been filtered out, the result is a collection of contour quads that surround at least every card in the image (in the form of a \code{vector<vector<cv::Point> >} --- a vector of vectors with four points each). \emph{At least} every card in the image; the pruning process is not yet over!
 
-			The assortment of contours go through a secondary, later filtration process that requires processing the pixel data within these contours. To do this --- as well as to construct the card Mats for subsequent classification --- the contour quad data is used to perspective transform the original image into a rectangular image of the card, an operation reviewed previously \secref{sec:isolation}.
+			The assortment of contours go through a secondary, later filtration process that requires processing the pixel data within these contours. To do this --- as well as to construct the card image matrices for subsequent classification --- the contour quad data is used to perspective transform the original image into a rectangular image of the card, an operation reviewed previously \secref{sec:isolation}.
 
 			\begin{figure}[H]
 				\centering
 				\includegraphics[width=0.6\linewidth]{perstrans1}
 				\includegraphics[width=0.3\linewidth]{perstrans2}
-				\caption{Output of Perspective Transform of Contour Quad from Test Image}
+				\caption{Output of perspective transform of contour quad from test image}
 				\label{fig:perstrans}
 			\end{figure}
 
 			The perspective transform is low-level enough that its implementations do not vary much at all. The maths involved in calculating the 3x3 matrix of a perspective transform that can be used to map pixels at a perspective to other shapes/perspectives is standard but cumbersome to implement (unlike an affine transform). For these reasons, the OpenCV function \code{cv::getPerspectiveTransform()} was used. It takes two quads as inputs and returns the map matrix. The source quad is the detected contour and the destination quad is a simple 250x350 rectangle which matches the standard 5:7 poker card aspect ratio like in figure~\ref{fig:perstrans}.
 
-			The transformation matrix is then used in the function \code{cv::warpPerspective()} which deforms the pixel grid of the source image and maps it to the destination image while interpolating transitional pixels; a process that is both non-trivial as well as distant from the task at hand. The Mat produced through this process is subsequently used to instantiate a new \code{Card} object.
+			The transformation matrix is then used in the function \code{cv::warpPerspective()} which deforms the pixel grid of the source image and maps it to the destination image while interpolating transitional pixels; a process that is both non-trivial as well as distant from the task at hand. The image matrix produced through this process is subsequently used to instantiate a new \code{Card} object.
 
-			On instantiation, the \code{Card} constructor additionally generates an 8x8 CLAHE version and a 140 threshold binary version of the card Mat, which are publicly accessible from a \code{Card} object. Once instantiated, the cards binary Mat is finally used for the last phase of isolation filtering.
+			On instantiation, the \code{Card} constructor additionally generates an 8x8 CLAHE version and a 140 threshold binary version of the card image matrix, which are publicly accessible from a \code{Card} object. Once instantiated, the card's binary image matrix is finally used for the last phase of isolation filtering.
 
-			The last criteria for what makes a card is its whiteness measure. The measure is simple; all non-zero (i.e. white) pixels in the card Mat are counted and the final value is divided by the card's area giving a float that describes the proportion of whiteness in the card. The whiteness threshold is set to an experimentally practical \code{0.5F} or 50\% bearing in mind that error due to lighting inconsistency is a non-issue following CLAHE. Cards that are not white enough are discarded. This solves false detections such as that in figure~\ref{fig:whiteness}.
+			The last criteria for what makes a card is its whiteness measure. The measure is simple; all non-zero (i.e. white) pixels in the card image matrix are counted and the final value is divided by the card's area giving a float that describes the proportion of whiteness in the card. The whiteness threshold is set to an experimentally practical \code{0.5F} or 50\% bearing in mind that error due to lighting inconsistency is a non-issue following CLAHE. Cards that are not white enough are discarded. This solves false detections such as that in figure~\ref{fig:whiteness}.
 
 			\begin{figure}[H]
 				\centering
 				\includegraphics[width=0.9\linewidth]{whiteness}
-				\caption{Example of Whiteness Check Ignoring Overturned Card}
+				\caption{Example of whiteness check ignoring overturned card}
 				\label{fig:whiteness}
 			\end{figure}
 
 			Finally, there is one more processing step that needs to be undertaken before a detected card is deemed worthy enough to join its brethren in the detected card vector and \code{find_cards()} can return\ldots
 
 		\subsubsection{Rotation Correction}
-			One deal-breaking issue was the problem of a sequence of contour quad vertices starting at the wrong corner and, as a direct consequence, causing the final card Mat to be perspective transformed incorrectly. This problem became evident became evident when processing cards where the top-most corner in the image is numbered, such as the lower examples in figure~\ref{fig:rot}; the card could just be at a very strange perspective that projects to that shape.
+			One deal-breaking issue was the problem of a sequence of contour quad vertices starting at the wrong corner and, as a direct consequence, causing the final card image matrix to be perspective transformed incorrectly. This problem became evident when processing cards where the top-most corner in the image is numbered, such as the lower examples in figure~\ref{fig:rot}; the card could just be at a very strange perspective that projects to that shape.
 
 			\begin{figure}[H]
 				\centering
@@ -470,13 +470,13 @@
 				\includegraphics[width=0.3\linewidth]{rot2}\\[5px]
 				\includegraphics[width=0.6\linewidth]{rot3}
 				\includegraphics[width=0.3\linewidth]{rot4}
-				\caption{Example of Erroneous Perspective Transformation}
+				\caption{Example of erroneous perspective transformation}
 				\label{fig:rot}
 			\end{figure}
 
-			The solution developed is simple and works very well. The same measure of whiteness as is used for the whole card is applied to both the top left and the bottom right corners of the card Mat (the bounds for which are defined as static constants in the \code{Card} class based on physical measurements). If corner whiteness surpasses 80\%, the card quad is rotated by one vertex --- the direction or rotation being arbitrary due to a card's symmetry --- and transformed into a new Mat.
+			The solution developed is simple and works very well. The same measure of whiteness as is used for the whole card is applied to both the top left and the bottom right corners of the card image matrix (the bounds for which are defined as static constants in the \code{Card} class based on physical measurements). If corner whiteness surpasses 80\%, the card quad is rotated by one vertex --- the direction or rotation being arbitrary due to a card's symmetry --- and transformed into a new image matrix.
 
-			The corner whiteness for this new Mat is also measured, and compared against old corner whiteness. If it has a lesser corner whiteness measure than the old, that means that the old card Mat was indeed oriented incorrectly and so the new one is used instead. If the opposite holds true, then the first overall whiteness threshold was passed incorrectly (perhaps due to some bizarre specular lighting that the CLAHE did not quite catch) and so the new mat is discarded and the old one's usage is continued as if nothing ever happened.
+			The corner whiteness for this new image matrix is also measured, and compared against old corner whiteness. If it has a lesser corner whiteness measure than the old, that means that the old card image matrix was indeed oriented incorrectly and so the new one is used instead. If the opposite holds true, then the first overall whiteness threshold was passed incorrectly (perhaps due to some bizarre specular lighting that the CLAHE did not quite catch) and so the new mat is discarded and the old one's usage is continued as if nothing ever happened.
 
 			At long last, the \code{Card} vector contains all detected cards --- to a high degree of accuracy --- ready for individual processing and classification by the rest of the program, and the function can return.
 	\counterwithin{figure}{subsection}
