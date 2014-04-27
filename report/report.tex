@@ -495,11 +495,11 @@
 			\label{fig:picture}
 		\end{figure}
 
-		The same function that was used for finding card contours earlier \secref{sec:isolation} in \source{isolation.cpp}{app:isolationcpp}, \code{find_quads()}, is also applied to a card's image matrix from within the function \code{detect_type()} in \source{classification.cpp}{classificationcpp}. If a single quad contour with an area large enough for it not to be the ace of diamond's diamond is found within the card, it is classified as a picture card and that information is stored the card's object of type \code{Card}.
+		The same function that was used for finding card contours earlier \secref{sec:isolation} in \source{isolation.cpp}{app:isolationcpp}, \code{find_quads()}, is also applied to a card's image matrix from within the function \code{detect_type()} in \source{classification.cpp}{app:classificationcpp}. If a single quad contour with an area large enough for it not to be the ace of diamond's diamond is found within the card, it is classified as a picture card and that information is stored the card's object of type \code{Card}.
 	\subsection{Value/Rank and Suit Symbol Isolation}
 		Since pure HoM was found to (unsurprisingly) be very time intensive, even after cutting the templates to be matched in half via colour detection, a shortcut needed to be found for rank and suit detection. The solution is to locate and isolate the value/rank symbol and the suit symbol and, once scaled, apply HoM to just those subimages.
 
-		This is done in a simple yet extremely effective manner at the bottom of \source{isolation.cpp}{isolationcpp} starting with the function \code{find_symbols()}, which, like \code{find_cards()}, is called from \source{main.cpp}{maincpp}.
+		This is done in a simple yet extremely effective manner at the bottom of \source{isolation.cpp}{app:isolationcpp} starting with the function \code{find_symbols()}, which, like \code{find_cards()}, is called from \source{main.cpp}{app:maincpp}.
 
 		The algorithm developed specifically for this purpose can be described as follows:
 
@@ -694,7 +694,7 @@
 			\includegraphics[width=\textwidth]{chris/image36}
 		\end{figure}
 	\pagebreak
-	\section{Source Code Listings}
+	\section{Fully Documented Source Code Listings}
 		\lstset{
 			language=C++,
 			showspaces=false,
@@ -714,10 +714,40 @@
 			stepnumber=2,
 			tabsize=2,
 		}
-
 		\subsection{main.cpp}
 		\label{app:maincpp}
 		\lstinputlisting{res/appendices/src/main.cpp}
+		\subsection{stdafx.h}
+		\lstinputlisting{res/appendices/include/stdafx.h}
+		\subsection{stdafx.cpp}
+		\lstinputlisting{res/appendices/src/stdafx.cpp}
+		\subsection{card.h}
+		\lstinputlisting{res/appendices/include/card.h}
+		\subsection{card.cpp}
+		\lstinputlisting{res/appendices/src/card.cpp}
+		\subsection{preprocessing.h}
+		\lstinputlisting{res/appendices/include/preprocessing.h}
+		\subsection{preprocessing.cpp}
+		\lstinputlisting{res/appendices/src/preprocessing.cpp}
+		\subsection{isolation.h}
+		\lstinputlisting{res/appendices/include/isolation.h}
+		\subsection{isolation.cpp}
+		\label{app:isolationcpp}
+		\lstinputlisting{res/appendices/src/isolation.cpp}
+		\subsection{cl\_own.h}
+		\lstinputlisting{res/appendices/include/cl_own.h}
+		\subsection{cl\_own.cpp}
+		\label{app:clowncpp}
+		\lstinputlisting{res/appendices/src/cl_own.cpp}
+		\subsection{classification.h}
+		\lstinputlisting{res/appendices/include/classification.h}
+		\subsection{classification.cpp}
+		\label{app:classificationcpp}
+		\lstinputlisting{res/appendices/src/classification.cpp}
+		\subsection{utils.h}
+		\lstinputlisting{res/appendices/include/utils.h}
+		\subsection{utils.cpp}
+		\lstinputlisting{res/appendices/src/utils.cpp}
 \end{appendices}
 
 \vfill
