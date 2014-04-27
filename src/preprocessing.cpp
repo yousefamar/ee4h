@@ -2,7 +2,6 @@
 | Pre-processing file for EE4H Assignment						         |
 |																		 |
 | Authors: Yousef Amar and Chris Lewis									 |
-| Last Modified: 03/02/2014												 |
 |																		 |
 \************************************************************************/
 
@@ -30,16 +29,14 @@ cv::Mat binary_threshold(cv::Mat input, float threshold_value, int min, int max)
 	//Create output
 	cv::Mat output(input_size.height, input_size.width, CV_8UC1);
 
-	//Convert to grey-scale
-//	cv::cvtColor(input, output, CV_BGR2GRAY);
-
 	//Pointers to data - fastest access method
-	uchar *in_data = (uchar*)input.data;
-	uchar *out_data = (uchar*)output.data;
+	uchar 
+		*in_data = (uchar*)input.data,
+		*out_data = (uchar*)output.data;
 
 	//Additional image info gathered once for speed
-	int input_channels = input.channels();
-	int output_channels = output.channels();
+	int input_channels = input.channels(),
+		output_channels = output.channels();
 
 	//For all pixels...
 	for(int y = 0; y < input_size.height; y++)
@@ -89,12 +86,14 @@ cv::Mat make_background_black(cv::Mat input, int white_level)
 	cv::Mat output = input.clone();
 
 	//Pointer to data
-	uchar *in_data = (uchar*)input.data;
-	uchar *out_data = (uchar*)output.data;
+	uchar 
+		*in_data = (uchar*)input.data,
+		*out_data = (uchar*)output.data;
 
 	//Additional image info gathered once for speed
-	int input_channels = input.channels();
-	int output_channels = output.channels();
+	int 
+		input_channels = input.channels(),
+		output_channels = output.channels();
 
 	//For all pixels...
 	for(int y = 0; y < input_size.height; y++)
@@ -267,95 +266,4 @@ bool is_red_suit_by_corners(cv::Mat input, int base_threshold, int target_region
 	}
 
 	return count >= target_regions;
-}
-
-/**
-  * Find out whether a card is a red suit card (hearts or diamonds)
-  *
-  * Arguments
-  * cv::Mat input:			The card image matrix
-  *     int base_threshold: Minimum pixel value (combat black)
-  *
-  * Returns 
-  * bool: True if there is a clear red dominance
-  */
-bool is_red_suit(cv::Mat input, int base_threshold)
-{
-	//Get size
-	cv::Size input_size = input.size();
-
-	//Pointer to data
-	uchar *in_data = (uchar*)input.data;
-
-	//Store dominant colour totals
-	int red = 0, blue = 0, green = 0;
-
-	//Fetch image matrix data once
-	int input_channels = input.channels();
-
-	//For all pixels...
-	for(int y = 0; y < input_size.height; y++)
-	{
-		for(int x = 0; x < input_size.width; x++)
-		{
-			//Get values
-			int b = in_data[(y)*input.step + (x)*input_channels + 0];
-			int g = in_data[(y)*input.step + (x)*input_channels + 1];
-			int r = in_data[(y)*input.step + (x)*input_channels + 2];
-
-			if(max(r, g, b) == r && r > base_threshold)
-			{
-				red++;
-			}
-			else if(max(r, g, b) == g && g > base_threshold)
-			{
-				green++;
-			}
-			else if(max(r, g, b) == b && r > base_threshold)
-			{
-				blue++;
-			}
-			else {
-				//No action
-			}
-		}
-	}
-
-	//Compute result
-	return (red > blue && red > green);
-}
-
-/**
-  * Equalise the intensity of a colour image
-  * Adapted from: http://stackoverflow.com/a/15009815
-  *
-  * Arguments
-  * cv::Mat input: The input image to equalise
-  *
-  * Returns cv::Mat: The equalised BGR image
-  */
-cv::Mat colour_equalise(cv::Mat input)
-{
-	if(input.channels() != 3)
-	{
-		cerr << "Input must have 3 channels." << endl;
-		return input;
-	}
-	//Convert to other space
-	cv::Mat temp;
-	cv::cvtColor(input, temp, CV_BGR2YCrCb);
-
-	//Split
-	vector<cv::Mat> channels;
-	cv::split(temp, channels);
-
-	//Equalise intensity channel
-	cv::equalizeHist(channels[0], channels[0]);
-
-	//Re-combine
-	cv::Mat output;
-	cv::merge(channels, temp);
-	cv::cvtColor(temp, output, CV_YCrCb2BGR);
-
-	return output;
 }

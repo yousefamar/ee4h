@@ -9,6 +9,18 @@
 
 using namespace std;
 
+/*
+ * Canny thresholding
+ *
+ * Arguments:
+ * cv::Mat       input: Image matrix to use
+ *     int  low_thresh: Low threshold
+ *     int       ratio: Ratio to use
+ *     int kernel_size: Size of the kernel
+ *
+ * Returns:
+ * cv::Mat: Result of Canny thresholding operation
+ */
 cv::Mat canny_thresh(cv::Mat input, int low_thresh, int ratio, int kernel_size)
 {
 	cv::Mat grey, edges;
@@ -36,6 +48,15 @@ cv::Mat canny_thresh(cv::Mat input, int low_thresh, int ratio, int kernel_size)
 	return output;
 }
 
+/*
+ * Morphological gradient convenience
+ *
+ * Arguments:
+ * cv::Mat input: Image to use
+ *
+ * Returns:
+ * cv::Mat: Result of gradient operation
+ */
 cv::Mat morph_gradient(cv::Mat input)
 {
 	cv::Mat output;
@@ -46,6 +67,16 @@ cv::Mat morph_gradient(cv::Mat input)
 	return output;
 }
 
+/*
+ * Count blobs using fill of first pixel of each blob
+ *
+ * Arguments:
+ * cv::Mat input: Matrix to count
+ *     int level: Level to fill
+ *
+ * Returns:
+ * int: Number of blobs found
+ */
 int count_blobs(cv::Mat input, int level)
 {
 	if (input.channels() > 1)
@@ -102,17 +133,16 @@ cv::Mat hit_or_miss(cv::Mat input, cv::Mat struct_elem, float minimum_perc)
 		uchar 
 			*in_data = (uchar*)input.data,
 			*se_data = (uchar*)struct_elem.data,
-			*out_data = (uchar*)output.data
-		;
+			*out_data = (uchar*)output.data;
 		int
 			in_channels = input.channels(),
 			se_channels = struct_elem.channels(),
-			out_channels = output.channels()
-		;
+			out_channels = output.channels();
 
 		//Origin at the center, not the topleft etc
-		int h_half = (struct_elem.rows - 1) / 2;
-		int w_half = (struct_elem.cols - 1) / 2;
+		int 
+			h_half = (struct_elem.rows - 1) / 2,
+			w_half = (struct_elem.cols - 1) / 2;
 
 		//Search all pixels
 		for(int y = 0; y < input.rows; y++)
@@ -166,14 +196,25 @@ cv::Mat hit_or_miss(cv::Mat input, cv::Mat struct_elem, float minimum_perc)
 	}
 }
 
+/*
+ * Detect the suit colour of a card
+ *
+ * Argument:
+ * Card* card: Pointer to card to examine
+ */
 void detect_colour(Card *card)
 {
 	cv::Mat working = make_background_black(card->mat, 100);
 	working = filter_red_channel(working, 0);
-	//cv::imshow("Red Channel Filter", working);
 	card->detected_colour = is_red_suit_by_corners(working, 100, 2, 0.10F) == true ? Card::RED : Card::BLACK;
 }
 
+/*
+ * Detect the type of a card
+ *
+ * Arguments:
+ * Card* card: Pointer to card to examine
+ */
 void detect_type(Card *card)
 {
 	vector<vector<cv::Point> > squares;
@@ -184,8 +225,6 @@ void detect_type(Card *card)
 	{
 		find_squares(card->mat, squares, thresh);
 	}
-
-	// TODO: Somthing something diamond here (Ace of aforementioned suit)
 
 	if (squares.size() != 1)
 	{
@@ -200,10 +239,14 @@ void detect_type(Card *card)
 	cv::fillPoly(card->mat_bin, &p, &n, 1, cv::Scalar(255, 255, 255));
 }
 
+/*
+ * Detect rank of a value card (2 - 10)
+ *
+ * Arguments:
+ * Card* card: Pointer to card to examine
+ */
 void detect_value_number(Card *card)
 {
-	//cv::imshow("Binary Threshold", card->mat_bin);
-
 	cv::Mat temp = card->mat_bin.clone();
 
 	//Ignore the corners
@@ -218,6 +261,7 @@ void detect_value_number(Card *card)
 	//Count blobs
 	card->detected_value = count_blobs(temp, 0);	//Count symbols
 
+	//Is it an Ace?
 	if(card->detected_value == 1)
 	{
 		card->detected_rank = Card::RANK_ACE;
@@ -225,12 +269,18 @@ void detect_value_number(Card *card)
 	}
 }
 
+/*
+ * Detect the rank of a picture card using HoM
+ *
+ * Arguments:
+ * Card* card: Pointer to the card to examine
+ */
 void detect_value_picture(Card *card)
 {
 	cv::Mat mat_rank_1c;
 	if(card->mat_rank.channels() != 1)
 	{
-		//Convert
+		//Convert if neccessary
 		cv::cvtColor(card->mat_rank, mat_rank_1c, CV_BGR2GRAY);
 		cv::threshold(mat_rank_1c, mat_rank_1c, 128, 255, cv::THRESH_BINARY);
 	}
@@ -291,85 +341,13 @@ void detect_value_picture(Card *card)
 	}
 }
 
-int find_suit_scaled(Card *card, float minimum_perc, int max_scale)
-{
-	if(card->mat.channels() == 1)
-	{
-		cout << "Performing find_suit_scaled()" << endl;
-
-		//HOM all suits at all scales at both normal and flip orientations
-		int matches[4] = {0, 0, 0, 0};
-
-		//Load original SEs
-		cv::Mat se_symbols[4] = {
-			cv::imread("res/symbols/scale_full/club.png", CV_LOAD_IMAGE_GRAYSCALE),
-			cv::imread("res/symbols/scale_full/diamond.png", CV_LOAD_IMAGE_GRAYSCALE),
-			cv::imread("res/symbols/scale_full/heart.png", CV_LOAD_IMAGE_GRAYSCALE),
-			cv::imread("res/symbols/scale_full/spade.png", CV_LOAD_IMAGE_GRAYSCALE)
-		};
-
-		//Do ten scales - 1/10 to 10/10
-		for(int i = 1; i < max_scale; i++)
-		{
-			//For reach symbol
-			for(int j = 0; j < 4; j++)
-			{
-				//Calculate new size
-				int width = (int) round(((float)i / 10.0F) * (float)se_symbols[j].cols);
-				int height = (int) round(((float)i / 10.0F) * (float)se_symbols[j].rows);
-				cv::Size size(width, height);
-
-				//Resize SE
-				cv::Mat temp;
-				cv::resize(se_symbols[j].clone(), temp, size);
-
-				//Do match
-				cout << "Suit " << (j + 1) << "/4. Scale: " << i << "/" << max_scale << "\"" << endl;
-				matches[j] += count_blobs(hit_or_miss(card->mat, temp, minimum_perc), 255);
-			}
-		}
-
-		cout << "Scores (C/D/H/S): " << matches[CLUB] << "/" << matches[DIAMOND] << "/" << matches[HEART] << "/" << matches[SPADE] << endl;
-
-		//Find which suit was matched most
-		if(max(matches[CLUB], matches[DIAMOND], matches[HEART], matches[SPADE]) == matches[CLUB])
-		{
-			cout << "Suit may be CLUBS!" << endl;
-			card->detected_suit = Card::CLUBS;	//Make all in terms of #defined as enum can't be prototype return type!
-			return CLUB;
-		}
-		else if(max(matches[CLUB], matches[DIAMOND], matches[HEART], matches[SPADE]) == matches[DIAMOND])
-		{
-			cout << "Suit may be DIAMONDS!" << endl;
-			card->detected_suit = Card::DIAMONDS;
-			return DIAMOND;
-		}
-		else if(max(matches[CLUB], matches[DIAMOND], matches[HEART], matches[SPADE]) == matches[HEART])
-		{
-			cout << "Suit may be HEARTS!" << endl;
-			card->detected_suit = Card::HEARTS;
-			return HEART;
-		}
-		else if(max(matches[CLUB], matches[DIAMOND], matches[HEART], matches[SPADE]) == matches[SPADE])
-		{
-			cout << "Suit may be SPADES!" << endl;
-			card->detected_suit = Card::SPADES;
-			return SPADE;
-		}
-		else
-		{
-			cout << "No winner! UNKNOWN SUIT" << endl;
-			return -1;
-		}
-	}
-	else
-	{
-		cout << "Channels must be 1 for find_suit()!" << endl;
-		return -2;
-	}
-}
-
-void find_suit_sym(Card *card, float minimum_perc)
+/*
+ * Find the suit symbol
+ *
+ * Arguments:
+ * Card* card: Pointer to the card to examine
+ */
+void find_suit_sym(Card *card)
 {
 	cv::Mat mat_sym_1c;
 	if(card->mat_sym.channels() != 1)
@@ -451,7 +429,14 @@ void find_suit_sym(Card *card, float minimum_perc)
 }
 
 /*
- * Compare an image and a structuring element of the same size
+ * Hit-or-Miss an image and a structuring element of the same size
+ *
+ * Arguments:
+ * cv::Mat      img: Image to compare
+ * cv::Mat se_image: Structuring element image to use as template
+ *
+ * Returns:
+ * float: Percentage match between the two images
  */
 float hit_or_miss_score(cv::Mat img, cv::Mat se_image)
 {

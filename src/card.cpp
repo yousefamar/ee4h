@@ -2,16 +2,12 @@
 | Card file for EE4H Assignment											 |
 |																		 |
 | Authors: Yousef Amar and Chris Lewis									 |
-| Last Modified: 05/02/2014												 |
 |																		 |
 \************************************************************************/
 
 #include "../include/stdafx.h"
 
 using namespace std;
-
-//#define CORNER_H_PERC 0.12F
-//#define CORNER_V_PERC 0.28F
 
 // Initialise corner Rects
 const cv::Rect Card::TOP_CORNER_RECT = cv::Rect(5, 5, 0.15F * Card::WIDTH - 5, 0.28F * Card::HEIGHT - 5);
@@ -22,49 +18,65 @@ const int Card::CORNER_AREA = Card::TOP_CORNER_RECT.area();
 const cv::Scalar Card::LINE_COLOUR = cv::Scalar(0, 255, 0), Card::LINE_COLOUR_ALT = cv::Scalar(255, 0, 0);
 const cv::Scalar Card::TEXT_COLOUR = cv::Scalar(255, 255, 0);
 
+//Initialise others
 int Card::card_window_count = 0;
 
-/**
-  * Initialise all the data items in the results
-  */
+/*
+ * Default constructor
+ * Initialise all the data items in the results
+ */
 Card::Card()
 {
+	//Set default values
 	detected_suit = UNKNOWN_SUIT;
 	detected_colour = UNKNOWN_COLOUR;
 	detected_value = -1;
 	detected_rank = UNKNOWN_RANK;
-
-	/*stringstream title_stream;
-	title_stream << WINDOW_TITLE;
-	cv::destroyWindow(title_stream.str());*/
 }
 
+/*
+ * Constructor
+ * Initialise as default, set cv::Mat
+ *
+ * Arguments:
+ * cv::Mat mat: Input matrix to for this card
+ */
 Card::Card(cv::Mat mat)
 {
+	//Set default values
 	Card();
+
+	//Set main matrix
 	set_mat(mat);
 }
 
+/*
+ * Set the card's main matrix
+ *
+ * Arguments:
+ * cv::Mat mat: Input matrix to for this card
+ */
 void Card::set_mat(cv::Mat mat)
 {
+	//Set
 	this->mat = mat;
 
-	// Convert card mat to grey
+	//Generate greyscale matrix
 	mat_clahe = cv::Mat(mat.size(), CV_8U);
 	cv::cvtColor(mat, mat_clahe, CV_BGR2GRAY);
-
 	
 	//CLAHE (Contrast Limited Adaptive Histogram Equalization)
 	cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE(2.0, cv::Size(8, 8));
 	clahe->apply(mat_clahe, mat_clahe);
 	cv::blur(mat_clahe, mat_clahe, cv::Size(4, 4));
 
+	//Generate binary matrix
 	mat_bin = mat_clahe >= 140;
 }
 
-/**
-  * Show the results data
-  */
+/*
+ * Show the results data
+ */
 void Card::show()
 {
 	//Finally
@@ -73,21 +85,34 @@ void Card::show()
 	cv::imshow(title_stream.str(), results_to_mat());
 }
 
+/*
+ * Show results with a card
+ *
+ * Arguments:
+ * cv::Mat card: Card to use
+ */
 void Card::show_with_card(cv::Mat card)
 {
+	//Render out results matrix
 	cv::Mat results_mat = results_to_mat();
 
+	//Copy to main canvas
 	cv::Mat final(card.rows + results_mat.rows, max(card.cols, results_mat.cols), CV_8UC3);
-
 	card.copyTo(final(cv::Rect(0, 0, card.cols, card.rows)));
 	results_mat.copyTo(final(cv::Rect(0, card.rows, results_mat.cols, results_mat.rows)));
 
-	//Finally
+	//Finally, show
 	stringstream title_stream;
 	title_stream << WINDOW_TITLE << ++Card::card_window_count;
 	cv::imshow(title_stream.str(), final);
 }
 
+/*
+ * Convert results information to a matrix
+ *
+ * Returns:
+ * cv::Mat: Image matrix of results information
+ */
 cv::Mat Card::results_to_mat()
 {
 	//Create canvas
@@ -96,7 +121,7 @@ cv::Mat Card::results_to_mat()
 	//Title
 	cv::putText(canvas, "Results:", cv::Point(10, 35), CV_FONT_HERSHEY_PLAIN, 3, cv::Scalar(0, 0, 0), 1, 8, false);
 	
-	//Colour
+	//Render colour
 	switch(detected_colour) {
 	case RED:
 		cv::putText(canvas, "Colour: RED", cv::Point(10, 60), CV_FONT_HERSHEY_PLAIN, 2, cv::Scalar(0, 0, 0), 1, 8, false);
@@ -109,7 +134,7 @@ cv::Mat Card::results_to_mat()
 		break;
 	}
 
-	//Suit
+	//Render suit
 	switch(detected_suit) {
 	case CLUBS:
 		cv::putText(canvas, "Suit: CLUBS", cv::Point(10, 85), CV_FONT_HERSHEY_PLAIN, 2, cv::Scalar(0, 0, 0), 1, 8, false);
@@ -128,13 +153,17 @@ cv::Mat Card::results_to_mat()
 		break;
 	}
 
-	// Small hack; equivalent of != null
+	// Small hack; equivalent of != null check in Java
 	if (mat_sym.size().width)
+	{
 		mat_sym.copyTo(canvas(cv::Rect(window_width - mat_sym.size().width, window_height - mat_sym.size().height, mat_sym.size().width, mat_sym.size().height)));
+	}
 	if (mat_rank.size().width)
+	{
 		mat_rank.copyTo(canvas(cv::Rect(window_width - mat_rank.size().width - mat_sym.size().width, window_height - mat_rank.size().height, mat_rank.size().width, mat_rank.size().height)));
+	}
 
-	//Detected value
+	//Render detected value
 	stringstream val_stream;
 	if (!is_picture_card)
 		val_stream << "Value: " << detected_value;
@@ -168,9 +197,16 @@ cv::Mat Card::results_to_mat()
 		cv::putText(canvas, "Rank: N/A", cv::Point(10, 130), CV_FONT_HERSHEY_PLAIN, 2, cv::Scalar(0, 0, 0), 1, 8, false);
 	}
 
+	//Finally
 	return canvas;
 }
 
+/* 
+ * Show card as a results matrix
+ *
+ * Returns:
+ * cv::Mat: Rendered card with results
+ */
 cv::Mat Card::as_mat_with_results()
 {
 	cv::Mat results_mat = results_to_mat();
@@ -187,8 +223,11 @@ cv::Mat Card::as_mat_with_results()
 	return final;
 }
 
-/**
- * NOTE: Assumes constant dims à la GridLayout
+/*
+ * Show all cards as a cascade
+ *
+ * Arguments:
+ * vector<Card> cards: Vector of all cards
  */
 void show_cascade(vector<Card> cards)
 {
