@@ -79,7 +79,9 @@
 \parskip 2mm
 % TODO: Project man section, gantt, git, repo?
 \section{Introduction}
+	\counterwithin{figure}{subsection}
 	\input{intro.tex}
+	\counterwithin{figure}{subsubsection}
 
 \pagebreak
 \section{Review}
@@ -316,6 +318,7 @@
 			Note in the above figure that no markers are present when the SE symbol is obstructed. This prevents a complete match. In this way it is possible to locate a pre-determined symbol inside a larger image by iterating over the entire matrix.
 \pagebreak
 \section{Proposed Method}
+	\counterwithin{figure}{subsection}
 	\subsection{Sub-task Breakdown}
 		After review of the applicable processing methods in the previous section, the initial task list from Section~\ref{sec:task} can be expanded in more detail. Figure~\ref{fig:flowchart} shows the techniques used at each stage and the resulting classification information obtained:
 
@@ -339,6 +342,7 @@
 		Program flow
 		Realistic applications
 		Identify strengths and weaknesses
+	\counterwithin{figure}{subsubsection}
 \pagebreak
 \section{Implementation}
 	\label{sec:implementation}
@@ -471,6 +475,7 @@
 			The corner whiteness for this new Mat is also measured, and compared against old corner whiteness. If it has a lesser corner whiteness measure than the old, that means that the old card Mat was indeed oriented incorrectly and so the new one is used instead. If the opposite holds true, then the first overall whiteness threshold was passed incorrectly (perhaps due to some bizarre specular lighting that the CLAHE did not quite catch) and so the new mat is discarded and the old one's usage is continued as if nothing ever happened.
 
 			At long last, the \code{Card} vector contains all detected cards --- to a high degree of accuracy --- ready for individual processing and classification by the rest of the program, and the function can return.
+	\counterwithin{figure}{subsection}
 	\subsection{Colour Detection}
 		\input{colourdet.tex}
 	\subsection{Type Detection}
@@ -514,14 +519,17 @@
 		\end{figure}
 
 		These mats are only ever used for rank detection (J,Q,K,A), not value detection (2--10 inclusive) so there is no need to handle exceptional cases such as the fact that the value symbol `10' has two blobs instead of one. The isolated symbols can now be used for rank and suit classification.
+	\counterwithin{figure}{subsubsection}
 	\subsection{Value and Rank Detection}
 		\label{sec:numdet}
 		\input{numdet.tex}
+	\counterwithin{figure}{subsection}
 	\subsection{Suit Symbol Detection}
 		\input{suitdet.tex}
 	\subsection{Results Output}
 		\label{sec:resultsout}
 		\input{gui.tex}
+	\counterwithin{figure}{subsubsection}
 \pagebreak
 \section{Evaluation}
 	\subsection{Test images, increasing complexity}
