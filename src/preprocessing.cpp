@@ -35,7 +35,8 @@ cv::Mat binary_threshold(cv::Mat input, float threshold_value, int min, int max)
 		*out_data = (uchar*)output.data;
 
 	//Additional image info gathered once for speed
-	int input_channels = input.channels(),
+	int 
+		input_channels = input.channels(),
 		output_channels = output.channels();
 
 	//For all pixels...
@@ -218,6 +219,7 @@ bool is_red_suit_by_corners(cv::Mat input, int base_threshold, int target_region
 				int g = data[(y)*regions[i].step + (x)*region_channels + 1];
 				int r = data[(y)*regions[i].step + (x)*region_channels + 2];
 
+				//Find colour dominance
 				if(max(r, g, b) == r && r > base_threshold)
 				{
 					red++;

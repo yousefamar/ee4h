@@ -100,16 +100,15 @@ void find_squares(cv::Mat image, vector<vector<cv::Point> >& squares, int thresh
 {
 	cv::Size image_size = image.size();
 
+	//Get grey mat
 	cv::Mat grey8(image_size, CV_8U);
 	cv::cvtColor(image, grey8, CV_BGR2GRAY);
 
 	int clahe_size = (image_size.width + image_size.height)>>8;
-	//cout << clahe_size << endl;
 
 	//CLAHE (Contrast Limited Adaptive Histogram Equalization)
 	cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE(2.0, multi_mode?cv::Size(28, 28):cv::Size(32, 32));
 	clahe->apply(grey8, grey8);
-	//cv::equalizeHist(grey8, grey8);
 	if (clahe_size)
 		cv::blur(grey8, grey8, cv::Size(clahe_size, clahe_size));
 	
@@ -257,16 +256,10 @@ int find_cards(cv::Mat input, vector<Card>* cards)
 		// Apply perspective transformation
 		cv::warpPerspective(input, quad, transmtx, quad.size());
 
-		//stringstream s;
-		//s << "Perpective Transformed Card " << i;
-		//cv::imshow(s.str(), quad);
-
 		Card card(quad);
 
 		// Check whiteness of whole image
 		float whiteness = (float) cv::countNonZero(card.mat_bin) / Card::AREA;
-
-		//printf("Whiteness in card %d: %.2f\n", i, whiteness);
 		
 		if (whiteness < 0.5F)
 			continue;
