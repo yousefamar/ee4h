@@ -669,8 +669,20 @@
 \pagebreak
 \section{Conclusion}
 	\subsection{Summary}
+		After completing this assignment, an greater understanding has been obtained into the current fields of computer vision and mathematical morphology. Techniques such as CLAHE, Hough Transform and morphological operations such as erosion, closing and the Hit-or-Miss Transform have been found favourable for the assignment task of automated classification of playing cards.
+
+		This has been translated into a C++ software solution overcoming obstacles such as invalid cards, various orientations (through perspective transform operations) and variable lighting. Images can contain multiple cards and can be sourced from a local directory or captured live from a webcam through the use of a simple command line flag.
+
+		Evaluation of the software has been performed by a structured progression from synthetic images through to real images of single cards, multiple cards per scene and finally accuracy measurement through use of a confusion matrix to identify miss-classifications.
 	\subsection{Improvements}
-	\label{sec:improvements}
+		\label{sec:improvements}
+		Due to time limitation, the software was developed to work well with the most commonly encountered classic playing card style. Therefore the main weakness is that any kind of themed or differently stylized decks of cards will not result in the same level of performance. Other possible improvement include:
+		\begin{itemize}
+			\item Improving the pre-processing and equalisation to reduce incorrectly identified card contours and better cope with more extreme lighting conditions.
+			\item Use a thread based approach (requires C++11 compilation, currently unused) to concurrently perform pattern matching and other time consuming processes to reduce time between image capture and classification output. More sample sizes can increase detection accuracy, as well as possible orientation matching to utilise the suit symbol in the lower right corner of the card to improve accuracy.
+			\item Implement more data interfaces such as output to a CSV file, integration with a TCP connection for remote monitoring and processing, or to a connected microcontroller for more immediate environment interaction. 
+			\item The possibility of implementation on a GPU proper using CUDA or OpenCL could be explored, allowing much faster classification as well as a higher rate.
+		\end{itemize}
 \pagebreak
 \thispagestyle{empty}
 \printbibliography
