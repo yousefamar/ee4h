@@ -41,7 +41,6 @@ cv::Mat canny_thresh(cv::Mat input, int low_thresh, int ratio, int kernel_size)
 	cv::Canny(edges, edges, low_thresh, low_thresh*ratio, kernel_size);
 
 	// Using Canny's output as a mask, we display our result
-
 	cv::Scalar::all(0);
 	input.copyTo(output, edges);
 
@@ -61,6 +60,7 @@ cv::Mat morph_gradient(cv::Mat input)
 {
 	cv::Mat output;
 
+	//Get SE and perform operation
 	cv::Mat element = getStructuringElement(cv::MORPH_RECT, cv::Size(3, 3), cv::Point(1,1));  
 	cv::morphologyEx(input, output, cv::MORPH_GRADIENT, element);
 
@@ -204,8 +204,11 @@ cv::Mat hit_or_miss(cv::Mat input, cv::Mat struct_elem, float minimum_perc)
  */
 void detect_colour(Card *card)
 {
+	//Remove white false-positives
 	cv::Mat working = make_background_black(card->mat, 100);
 	working = filter_red_channel(working, 0);
+
+	//Evaluate red SA of corners
 	card->detected_colour = is_red_suit_by_corners(working, 100, 2, 0.10F) == true ? Card::RED : Card::BLACK;
 }
 
@@ -221,11 +224,13 @@ void detect_type(Card *card)
 
 	int thresh_lower = 150, thresh_upper = 255, thresh_increment = 2;
 
+	//Find a square within the card
 	for (int thresh = thresh_lower; thresh < thresh_upper; thresh += thresh_increment)
 	{
 		find_squares(card->mat, squares, thresh);
 	}
 
+	//One contour signifies illustration
 	if (squares.size() != 1)
 	{
 		card->is_picture_card = false;
@@ -234,6 +239,7 @@ void detect_type(Card *card)
 
 	card->is_picture_card = true;
 
+	//Remove
 	const cv::Point* p = &squares[0][0];
 	int n = (int)squares[0].size();
 	cv::fillPoly(card->mat_bin, &p, &n, 1, cv::Scalar(255, 255, 255));
@@ -445,12 +451,10 @@ float hit_or_miss_score(cv::Mat img, cv::Mat se_image)
 		//Meta
 		uchar 
 			*in_data = (uchar*)img.data,
-			*se_data = (uchar*)se_image.data
-		;
+			*se_data = (uchar*)se_image.data;
 		int
 			in_channels = img.channels(),
-			se_channels = se_image.channels()
-		;
+			se_channels = se_image.channels();
 
 		int total = img.rows * img.cols;
 
