@@ -165,7 +165,10 @@ cv::Mat Card::results_to_mat()
 
 	//Render detected value
 	stringstream val_stream;
-	val_stream << "Value: " << detected_value;
+	if (!is_picture_card)
+		val_stream << "Value: " << detected_value;
+	else
+		val_stream << "Value: N/A";
 	cv::putText(canvas, val_stream.str(), cv::Point(10, 110), CV_FONT_HERSHEY_PLAIN, 2, cv::Scalar(0, 0, 0), 1, 8, false);
 
 	//Detected picture card?
