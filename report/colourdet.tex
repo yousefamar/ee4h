@@ -1,4 +1,4 @@
-		The set of four traditional playing card suits are split into two further subcategories; diamonds and hearts in red, and clubs and spades in black. This information can be determined beforehand when classifying a card and used to reduce the suit symbol search space, as well as help increase detection accuracy. For example, when compared side by side, the hearts and spades suits both appear similar due to their curves and large surface area, with the spaces symbol appearing similar to a heart when viewed upside down.
+		The set of four traditional playing card suits can be split into two further subcategories; diamonds and hearts in red, and clubs and spades in black. This information can be determined beforehand when classifying a card and used to reduce the suit symbol search space, as well as help increase detection accuracy. For example, when compared side by side, the hearts and spades suits both appear similar due to their curves and large surface area, with the spades symbol appearing similar to a heart when viewed upside down:
 
 		\begin{figure}[H]
 			\centering
@@ -51,7 +51,7 @@ for(int y = 0; y < input_size.height; y++)
 				\includegraphics[width=\textwidth]{chris/image18}
 				\caption{}
 			\end{subfigure}
-			\caption{An isolated card (a) with white background pixels removed (b).}
+			\caption{An isolated card (a) with white background pixels removed (b)}
 			\label{fig:whitebg}
 		\end{figure}
 
@@ -76,7 +76,7 @@ for(int y = 0; y < input_size.height; y++)
 		\begin{figure}[H]
 			\centering
 			\includegraphics[width=0.4\textwidth]{chris/image19}
-			\caption{An isolated card (a) with white background pixels removed (b).}
+			\caption{Isolated card; red channel only}
 			\label{fig:redchan}
 		\end{figure}
 
@@ -162,7 +162,7 @@ bool is_red_suit_by_corners(cv::Mat input, int base_threshold, int target_region
 }
 		\end{lstlisting}
 
-		Thus if both the examined regions are found to be majority red above the parametrised percentage specified, the function returns \code{true}, meaning the card suit is a red suit, either diamonds or hearts. The result structure is then assigned the appropriate colour enumeration constant.
+		Thus if both the examined regions are found to be majority red above the parametrised percentage specified, the function returns \code{true}, meaning the card suit is a red suit, either diamonds or hearts. The respective Card structure is then assigned the appropriate colour enumeration constant.
 
 		When called as part of card isolation, the call appears as below:
 

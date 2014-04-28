@@ -6,11 +6,11 @@
 			\caption{Card classification GUI output showing card isolated (a), isolated suit symbol (b), isolated rank symbol (c) and textual results output (d).}
 		\end{figure}
 
-		For each detected card in the input image, the classified suit colour, suit symbol, value (0 for picture cards) and the rank detected (N/A for number cards).
+		For each detected card in the input image, the classified suit colour, suit symbol, value (0 for picture cards) and the rank detected (N/A for number cards) are shown in their own view tile.
 		
 		In this method of output it is easy to determine which elements of classification have succeeded or why they have failed when they do. For example, the isolated suit and rank symbol image matrices are reproduced at the bottom of the window, and therefore in the event of a problem in classification the intermediary isolations can be checked for errors. 
 		
-		The second form of output is shown in the form of a natural language result in the system console. A string is concatenated using all the fields stored in the Card structure once classification is complete to form a single plain-English sentence. The code segment below illustrates how this is done:
+		The second form of output is shown in the form of a natural language result in the system console. A string is concatenated using all the fields stored in the \code{Card} structure once classification is complete to form a single plain-English sentence. The code segment below illustrates how this is done:
 
 		\begin{lstlisting}
 

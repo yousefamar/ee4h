@@ -1966,15 +1966,17 @@
   <bcf:section number="0">
     <bcf:citekey order="1">duda1972use</bcf:citekey>
     <bcf:citekey order="2">canny1986computational</bcf:citekey>
-    <bcf:citekey order="3">suzuki1985topological</bcf:citekey>
-    <bcf:citekey order="4">pizer1987adaptive</bcf:citekey>
-    <bcf:citekey order="5">ramer1972iterative</bcf:citekey>
-    <bcf:citekey order="6">douglas1973algorithms</bcf:citekey>
-    <bcf:citekey order="7">sonka1999image1</bcf:citekey>
-    <bcf:citekey order="8">sonka1999image2</bcf:citekey>
-    <bcf:citekey order="9">badea</bcf:citekey>
-    <bcf:citekey order="10">squares</bcf:citekey>
-    <bcf:citekey order="11">suzuki1985topological</bcf:citekey>
+    <bcf:citekey order="3">wiki</bcf:citekey>
+    <bcf:citekey order="4">wiki</bcf:citekey>
+    <bcf:citekey order="5">suzuki1985topological</bcf:citekey>
+    <bcf:citekey order="6">pizer1987adaptive</bcf:citekey>
+    <bcf:citekey order="7">ramer1972iterative</bcf:citekey>
+    <bcf:citekey order="8">douglas1973algorithms</bcf:citekey>
+    <bcf:citekey order="9">sonka1999image1</bcf:citekey>
+    <bcf:citekey order="10">sonka1999image2</bcf:citekey>
+    <bcf:citekey order="11">badea</bcf:citekey>
+    <bcf:citekey order="12">squares</bcf:citekey>
+    <bcf:citekey order="13">suzuki1985topological</bcf:citekey>
   </bcf:section>
   <bcf:sortlist section="0" type="entry" label="nyt">
   <bcf:sorting>

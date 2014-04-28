@@ -1,6 +1,6 @@
 		Once a card has been isolated from an image and its perspective correctly transformed, the isolated suit symbol in the top-left corner is compared to a set of pre-created symbols using the previously discussed Hit-or-Miss Transform.
 
-		This operation is completed in two stages. First, the suit colour is determined, then the symbol is pattern matched. The suit search space is halved by the suit colour evaluation and also aids detection accuracy by defining pairs of suits as mutually exclusive in the detection. For example, a hearts symbol cannot be miss-classified as a spaces symbol once the colour of the suit is determined.
+		This operation is completed in two stages. First, the suit colour is determined, then the symbol is pattern matched. The suit search space is halved by the suit colour evaluation and also aids detection accuracy by defining pairs of suits as mutually exclusive in the detection. For example, a hearts symbol cannot be miss-classified as a spades symbol once the colour of the suit is determined.
 
 		\begin{figure}[H]
 			\centering
@@ -30,6 +30,13 @@ else
 }
 		\end{lstlisting}
 
+		\begin{figure}[H]
+			\centering
+			\includegraphics[width=0.6\textwidth]{chris/hearts}
+			\caption{Suit classification using reduced search space}
+			\label{fig:hearts}
+		\end{figure}
+
 		The second stage is performed with the Hit-or-Miss Transform applied to the isolated symbol \code{cv::Mat} using each of four pre-created symbol images, shown in Figure~\ref{fig:structelems}, after being resized to the same dimensions.
 
 		\begin{figure}[H]
@@ -54,7 +61,7 @@ else
 				\includegraphics[width=\textwidth]{chris/image31}
 				\caption{}
 			\end{subfigure}
-			\caption{The four pre-created suit symbol structuring elements.}
+			\caption{The four pre-created suit symbol structuring elements}
 			\label{fig:structelems}
 		\end{figure}
 
@@ -98,4 +105,4 @@ else
 			\caption{Isolated and segmented card suit symbol and pre-created template used for comparison.}
 		\end{figure}
 
-		In this way the suit symbol is identified as contributes to the classification of the card in question.
+		In this way the suit symbol is identified and contributes to the classification of the card in question.

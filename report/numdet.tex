@@ -60,14 +60,14 @@ temp = binary_closing(temp, 10);
 					\includegraphics[width=\textwidth]{chris/image23}
 					\caption{}
 				\end{subfigure}
-				\begin{subfigure}[b]{0.15\textwidth}
-					\centering
-					\includegraphics[width=\textwidth]{chris/image24}
-					\caption{}
-				\end{subfigure}
 				\begin{subfigure}[b]{0.14\textwidth}
 					\centering
 					\includegraphics[width=\textwidth]{chris/image25}
+					\caption{}
+				\end{subfigure}
+				\begin{subfigure}[b]{0.15\textwidth}
+					\centering
+					\includegraphics[width=\textwidth]{chris/image24}
 					\caption{}
 				\end{subfigure}
 				\caption{Pre-created Hit-or-Miss Structuring Elements for picture card rank evacuation}
@@ -123,7 +123,6 @@ for(int j = 0; j < 3; j++)
 	cv::resize(se_symbols[j], se_symbols[j], size); 
 }
 
-//Do matches using colour info integration
 matches[JACK] += (int)round(hit_or_miss_score(mat_rank_1c, se_symbols[JACK]) * 100.0F);
 matches[QUEEN] += (int)round(hit_or_miss_score(mat_rank_1c, se_symbols[QUEEN]) * 100.0F);
 matches[KING] += (int)round(hit_or_miss_score(mat_rank_1c, se_symbols[KING]) * 100.0F);
@@ -157,9 +156,9 @@ else
 			\end{lstlisting}
 
 		\subsubsection{Custom HoM Implementation}
-			Mathematical Morphology operations are available as part of the OpenCV library\\(\code{cv::morphologyEx()}), but as a result of study of the theory and experimental requirements it was felt that a custom implementation of the theory was appropriate. This allows additional modification and parameterisation of the behaviour of required morphological operators. To this end the implementation uses the \code{binary_operation()}, \code{binary_closing()} and \code{hit_or_miss()} functions whose core workings are detailed below:
+			Mathematical Morphology operations are available as part of the OpenCV library\\(\code{cv::morphologyEx()}), but as a result of study of the theory and experimental requirements it was felt that a custom implementation of the theory was appropriate. This allows additional modification and parameterisation of the behaviour of required morphological operators. To this end the implementation uses the \code{binary_operation()}, \code{binary_closing()} and \code{hit_or_miss()} functions whose core workings are detailed below.
 
-			A binary morphological erosion or dilation is performed on a pixel by pixel basis, with each pixel in the input image used as the centre of a symmetrical structuring element. In the case of erosion, the lowest value (any 0s) is set at the output pixel. In the case of dilation the greatest value (any 255s) is set as the output pixel. This is shown in the code segment below:
+			A binary morphological erosion or dilation is performed on a pixel by pixel basis, with each pixel in the input image used as the centre of a symmetrical structuring element. In the case of erosion, the lowest value (0/255) is set at the output pixel. In the case of dilation the greatest value (255/255) is set as the output pixel. This is shown in the code segment below:
 
 			\begin{lstlisting}
 
@@ -239,7 +238,7 @@ cv::Mat binary_closing(cv::Mat input, int element_size)
 }
 			\end{lstlisting}
 
-			Finally, the morphological Hit-or-Miss transform is implemented by comparing all pixels in an input image to those in the equivalent locations in the structuring element image. Once all pixels have been compared, the total number of matched pixels is compared against a minimum to count as a match. In the case of \code{hit_or_miss_score()} the raw percentage of matched pixels is output as the return value. The implementation in code is shown below:
+			Finally, the morphological Hit-or-Miss Transform is implemented by comparing all pixels in an input image to those in the equivalent locations in the structuring element image. Once all pixels have been compared, the total number of matched pixels is compared against a parametrised minimum to count as a match. In the case of \code{hit_or_miss_score()} the raw percentage of matched pixels is output as the return value. The implementation in code is shown below:
 
 			\begin{lstlisting}
 

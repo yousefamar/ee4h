@@ -15,7 +15,7 @@
 				\item Find card rank (numerical value and picture card rank)
 				\item Find card suit using suit symbol
 			\end{enumerate}
-			\item Display results of classification to user in easy to understand forms.
+			\item Display results of classification to user in easy to understand formats.
 		\end{enumerate}
 
 		In doing this the software must be able to compensate for issues that may hinder classification such as uneven lighting, different card orientations, single and multiple card images and card reflectivity.
@@ -33,16 +33,14 @@
 		\end{itemize}
 
 		This method involves both high and low level computer vision and mathematical morphological techniques that are detailed in the Review section \secref{sec:review} before implementation as documented in the Implementation section \secref{sec:implementation}. Using this series of stages the software is able to compensate for many of the issues highlighted in the last section. However, it is designed for the classical playing card style, used the world over, and not for overly stylised, custom, heavily themed or obfuscated decks.
-	% TODO: Is this a good heading?
-	\subsection{Findings}
-		% TODO: Figure with a capital F?
-		After successful implementation of the above stages (and techniques employed therein) the software is able to correctly isolate [TODO: How successful?] cards in moderately favourable conditions. The software is also able to isolate and correctly transform cards at many orientations relative to the camera as well as discard playing cards that are face down. Once these cards have been isolated, each card's rank and symbol are correctly identified with a high rate of success [TODO: How high?]. This is illustrated in Figure~\ref{fig:success} below:
+	\subsection{Results}
+		After successful implementation of the above stages (and techniques employed therein) the software is able to correctly isolate cards in moderately favourable conditions to an accuracy of 99.14\%. The software is also able to isolate and correctly transform cards at many orientations relative to the camera as well as discard playing cards that are face down. Once these cards have been isolated, each card's value/rank and symbol are correctly identified with a high rate of success at 93\%. This is illustrated in Figure~\ref{fig:success} below:
 
 		\begin{figure}[H]
 			\centering
 			\begin{subfigure}[b]{\textwidth}
 				\centering
-				\includegraphics[width=0.6\textwidth]{chris/image1}
+				\includegraphics[width=0.9\textwidth]{chris/image1}
 				\caption{}
 			\end{subfigure}
 		\end{figure}
@@ -51,7 +49,7 @@
 			\centering
 			\begin{subfigure}[b]{\textwidth}
 				\centering
-				\includegraphics[width=0.6\textwidth]{chris/image2}
+				\includegraphics[width=0.9\textwidth]{chris/image2}
 				\caption{}
 			\end{subfigure}
 		\end{figure}
@@ -60,14 +58,14 @@
 			\centering
 			\begin{subfigure}[b]{\textwidth}
 				\centering
-				\includegraphics[width=0.6\textwidth]{chris/image3}
+				\includegraphics[width=0.9\textwidth]{chris/image3}
 				\caption{}
 			\end{subfigure}
 			\caption{A set of playing cards (a) at various orientations with a visual output of successful classifications (b) (c)}
 			\label{fig:success}
 		\end{figure}
 
-		However, when the input image is of low quality or there are too many cards per image (\textgreater $\approx$12) the classification is not always successful, but it has been found that in these situations is at least a small number are correctly identified, particularly if the unfavourable light varies across the image. Some examples of such situations are shown in Figure~\ref{fig:fail}:
+		However, when the input image is of low quality or there are too many cards per image (\textgreater $\approx$12) the classification accuracy is reduced, but it has been found that in these situations is at least a small number are correctly identified, particularly if the unfavourable light varies across the image. Some examples of such situations are shown in Figure~\ref{fig:fail}:
 
 		% TODO: Images with window borders from now on
 		% TODO: Light distortion still an issue?

@@ -61,7 +61,7 @@
 
 \title{{\huge Playing Card Recognition}\\\vspace{2 mm}{\large \textbf{Computer Vision (EE4H) --- Final Report}}}
 %\subtitle{EECE MEng4 FYP -– Second Report}
-\author{Yousef Amar (1095307)\\Chris Lewis (1234567)}
+\author{Yousef Amar (1095307)\\Chris Lewis (1072312)}
 \date{2014-04-28}
 \maketitle
 \thispagestyle{empty}
@@ -69,7 +69,7 @@
 %\begin{quotation}
 \begin{abstract}
 	This report presents a review and implementation of computer vision and mathematical morphology techniques for image enhancement with the aim of automated classification of classic playing cards.\\[4px]
-	Through structured pre-processing, isolation and classification stages the suit and value of any particular card is determined with a [TODO: accuracy rating] success rate. Factors such as variable lighting, multiple cards, invalid cards and orientation correction are overcome through use of the OpenCV library as well as custom implementations of morphological Hit-or-Miss pattern matching.\\[4px]
+	Through structured pre-processing, isolation and classification stages the suit and value of any particular card is determined with a 93\% success rate. Factors such as variable lighting, multiple cards, invalid cards and orientation correction are overcome through use of the OpenCV library as well as custom implementations of morphological Hit-or-Miss pattern matching.\\[4px]
 	Finally, a structured evaluation of the software is performed through progression from simple images to more complex scenes involving many cards at once, as well as a confusion matrix.
 \end{abstract}
 %\end{quotation}
@@ -91,15 +91,15 @@
 	\label{sec:review}
 	\subsection{Review of Potential Methods}
 		\subsubsection{High-level Isolation}
-			For any realistic commercial application, the playing card recognition system would, for all practical purposes, need to isolate individual playing cards from an input image for later classification. To do this, there exist a number of well known computer vision techniques and algorithms.
+			For any realistic commercial application, the playing card recognition system would need to isolate individual playing cards from an input image for later classification. To do this, there exist a number of well known computer vision techniques and algorithms.
 
-			Short of using a Haar classifier blanker solution, the technique most people would reflexively turn to is the Hough Transform \autocite{duda1972use} to detect card edges. Practically, this would be combined with a generic edge detection algorithms such as the Canny Edge Detection \autocite{canny1986computational}.
+			Short of using a Haar classifier blanker solution, the technique most people would reflexively turn to is the Hough Transform \autocite{duda1972use} to detect card edges. Practically, this would be combined with generic edge detection algorithms such as Canny Edge Detection \autocite{canny1986computational}.
 
 			% TODO: Define hysteresis
 			Canny Edge Detection is particularly useful for increasing contrast and removing image noise; a process that would no doubt come in handy for isolating playing cards. A precursor to Canny Edge Detection is to blur the input image (converted to greyscale of course). This has the effect of removing specular noise. Then, areas of the image where the intensity changes with a steep gradient are marked. From these, only local maxima are preserved. A double threshold is then applied to the intensities of these local maxima that results in an image with strong and weak edges alike. Finally all edges that are not 8-connected to strong edge blobs are removed by hysteresis.
 
 			% TODO: List parameters
-			Indeed, applying Canny Edge Detection to an image of playing card is not novel and seems to have good results. Figure~\ref{fig:cannyimg} depicts an example of doing so on a test image.
+			Indeed, applying Canny Edge Detection to an image of a playing card is not novel and seems to have good results. Figure~\ref{fig:cannyimg} depicts an example of doing so on a test image.
 
 			\begin{figure}[H]
 				\centering
@@ -137,7 +137,7 @@
 					\includegraphics[width=\textwidth]{hough2}
 					\caption{}
 				\end{subfigure}
-				\caption{The first step of the Hough transform (a) and a Hough-space graph (b); Source: Wikipedia, Hough Transform}
+				\caption{The first step of the Hough transform (a) and a Hough-space graph (b); \autocite{wiki}}
 				\label{fig:houghmath}
 			\end{figure}
 
@@ -152,7 +152,7 @@
 
 			There are a number of limitations this method poses however to this application in particular. First of all, one would obviously have to programmatically calculate the points of intersection for all the four lines that the hough transform detected; the point of intersection would be a card's four corners, which can be used to construct the quadrilateral shape for subsequent perspective transformation.
 
-			However, what if there is more than one card in the image? How would the system know how many lines to pick out and which card they belong to? If it is a question of Hough-space thresholding and distance measures for determining which lines belong to which card, then what would happen if you through a window in the mix, or anything with edges and lines for that matter? Simply using the Hough transform may not be the most expandable solution for this purpose. These same limitations apply with corner detection algorithms.
+			However, what if there is more than one card in the image? How would the system know how many lines to pick out and which card they belong to? If it is a question of Hough-space thresholding and distance measures for determining which lines belong to which card, then what would happen if a window was included in the image, or anything with edges and lines for that matter? Simply using the Hough transform may not be the most expandable solution for this purpose. These same limitations apply with corner detection algorithms.
 
 			~\\
 
@@ -207,7 +207,7 @@
 		\subsubsection{Low-level Classification}
 			Once a card has been identified in the input image, its perspective transformed and isolated to a separate image, it must be classified according to suit and rank. In order to do this, techniques are available from the field of Mathematical Morphology that allow the modification of an image to enhance areas of interest as a form of pre-processing.
 
-			In practice, these operators are implemented by passing a small group of pixels called a structuring element over the entirety of an input image, and a set of rules applied to the pixels present in the SE at each location in the image. Once the SE has been passed over the entire image, the operation is complete.
+			In practice, these operators are implemented by passing a small group of pixels called a structuring element (SE) over the entirety of an input image, and a set of rules applied to the pixels present in the SE at each location in the image. Once the SE has been passed over the entire image, the operation is complete.
 
 			The basic morphological operators available include \autocite{sonka1999image1}:
 
@@ -282,9 +282,9 @@
 
 			These operators can be used to help clean up a segmented image and remove noise and spurious pixels to aid later stages of processing.
 		\subsubsection{Hit-or-Miss Transform}
-			The Hit-or-Miss Transform is another morphological technique that is useful as a form of binary pattern matching. This means it can be used to compare a sample image with a desired feature image to find instances in the sample image. In the context of classifying playing cards, this technique has potential to be used to enable the detection of the card's suit symbol as well as the rank symbol when compared to clean templates of each symbol type.
+			The Hit-or-Miss Transform is another morphological technique that is useful as a form of binary pattern matching. This means it can be used to find instances of a desired feature image in a given sample image. In the context of classifying playing cards, this technique has potential to be used to enable the detection of the card's suit symbol as well as the rank symbol when compared to clean templates of each symbol type.
 
-			The basis of operation is similar to the previous operators except that the structuring element passed over the input image is that of the pattern to be found. The structuring element is divided into two sets; the `hit' set and the `miss' set. When both sets are eroded, the result is an output point wherever the input image matches the structuring element. A mathematical description of the operation is shown below, and describes the result of the Transform to be the intersection of the hit and miss sets eroded by the image and image complement respectively \autocite{badea}:
+			The basis of the operation is similar to the previous operators except that the structuring element passed over the input image is that of the pattern to be found. The structuring element is divided into two sets; the `hit' set and the `miss' set. When both sets are eroded, the result is an output point wherever the input image matches the structuring element. A mathematical description of the operation is shown below, and describes the result of the Transform to be the intersection of the hit and miss sets eroded by the image $A$ and image complement $A^C$ respectively \autocite{badea}:
 
 			\begin{equation}
 				X \otimes B = ( A \ominus C ) \cap ( A^C \ominus D )
@@ -335,16 +335,12 @@
 		\begin{itemize}
 			\item The first stage is to load the input image, from either a local directory or captured from a connected webcam. 
 			\item Once this is done the individual cards must be extracted from the input image to separate images for later classification. This will be done by using Contrast Limited Histogram Equalisation to compensate for varying illumination and contour detection to locate the card parallelograms. Finally the locations of the contours will be compared to discard duplicates that are too close to each other e.g.: multiple contours for one card as a result of shadows.
-			\item The next stage is to detect the suit colour of the card. This will be used to reduce the search space of the suit itself. For example, a red suit can only logically be a diamonds or hearts card. This helps reduce confusion between two at a later processing stage. This will be achieved by removing the white background and evaluating the red surface area within the two rank and symbol corners. Above a threshold and the suit must be a red one.
+			\item The next stage is to detect the suit colour of the card. This will be used to reduce the search space of the suit itself. For example, a red suit can only logically be a diamonds or hearts card. This helps reduce confusion between the two at a later processing stage. This will be achieved by removing the white background and evaluating the red surface area within the two rank and symbol corners. Above a threshold and the suit must be a red one.
 			\item Next the type of the card is determined; a value card (2 to 10) or a picture card (Jack, Queen, King). An Ace is a value one card. If an isolated card image contains a contour within it, it must be a picture card as the inner contour contains the illustration. 
 			\item The suit symbol and rank symbol must be isolated as sub-regions to be used later for isolation. This is done by isolating the corner containing the symbols and searching for blobs from the top. The first encountered will be the rank, and the second below it will be the suit symbol.
-			\item Depending on the result of the Detect Type stage, the card is classified differently depending on its type.  If it is a picture card, the rank symbol is pattern matched against a pre-created template for each of the `J', `Q' and `K' rank symbols and the strongest match will be the rank of that card. However, if the card is a value card, it is classified in a different manner. This will involve removing the suit and rank symbol and using the erosion and closing morphological operations to reduce the remaining suit symbols to a number of countable blobs equal to the value of the card. 
+			\item Depending on the result of the Detect Type stage, the card is classified differently depending on its type.  If it is a picture card, the rank symbol is pattern matched against a pre-created template for each of the `J', `Q' and `K' rank symbols and the strongest match will be the rank of that card. However, if the card is a number card, it is classified in a different manner. This will involve removing the suit and value symbol and using the erosion and closing morphological operations to reduce the remaining suit symbols to a number of countable blobs equal to the value of the card. 
 			\item The final stage of classification is to determine the actual suit of the card. This is done in a similar fashion to determining the rank of a picture card as previously discussed, except the pre-created templates are those of each of the suits; diamonds, clubs, hearts and spades.
 		\end{itemize}
-	\subsection{Justification}
-		Program flow
-		Realistic applications
-		Identify strengths and weaknesses
 	\counterwithin{figure}{subsubsection}
 \pagebreak
 \section{Implementation}
@@ -359,11 +355,11 @@
 		Once an image is passed in as an input, the first step is to find one or more cards in the image and, if any were found, extract them from the image and prepare them for processing. This is done in a number of steps.
 
 		\subsubsection{Card Detection}
-			In order to detect cards within the image, the function \code{find_cards()} in \source{isolation.cpp}{app:isolationcpp} is called from \source{main.cpp}{app:maincpp}. It takes in an empty vector of objects of type \code{Card} as an inputs which it then populates with the detected cards for later processing.
+			In order to detect cards within the image, the function \code{find_cards()} in \source{isolation.cpp}{app:isolationcpp} is called from \source{main.cpp}{app:maincpp}. It takes in an empty \code{std::vector} of objects of type \code{Card} as an inputs which it then populates with the detected cards for later processing.
 
 			Cards are detected by finding quadrilaterals with a method not unlike the one used in the sample file \emph{squares.cpp} in the official OpenCV repository \autocite{squares} albeit with some decisive distinctions. The backbone of the algorithm is the OpenCV function \code{cv::findContours()}. This function retrieves contours from a binary image using the algorithm developed by \textcite{suzuki1985topological} via border following. It was decided not to implement a custom function since it would not have added any flexibility or speed advantage over the OpenCV implementation. Indeed it would only have increased code complexity.
 
-			This function requires a binary image as an input. As such, input images undergo a series of processing before hand. First, they are converted to greyscale. Then CLAHE --- as explained previously \secref{sec:isolation} --- is applied to these images. The size of the CLAHE window varies between 32x32 and 28x28 pixels depending on if the user has specified with the \code{--multi} command line flag that the program should run in multiple card mode. CLAHE operations using OpenCV functions run on the GPU through CUDA; they cannot be optimised by writing custom code for CLAHE without utilising CUDA, which would only introduce system-level bugs that have been long since resolved within OpenCV's code base. For this reason, the OpenCV CLAHE implementation was used. Figure~\ref{fig:clahe} shows a side by side comparison of normal HE and CLAHE on an image of a playing card that has a bright top-right corner:
+			This function requires a binary image as an input. As such, input images undergo a series of processing stages beforehand. First, they are converted to greyscale. Then CLAHE --- as explained previously \secref{sec:isolation} --- is applied to these images. The size of the CLAHE window varies between 32x32 and 28x28 pixels depending on if the user has specified with the \code{--multi} command line flag that the program should run in multiple card mode. CLAHE operations using OpenCV functions run on the GPU through CUDA; they cannot be optimised by writing custom code for CLAHE without utilising CUDA, which would only introduce system-level bugs that have been long since resolved within OpenCV's code base. For this reason, the OpenCV CLAHE implementation was used. Figure~\ref{fig:clahe} shows a side by side comparison of normal HE and CLAHE on an image of a playing card that has a bright top-right corner:
 
 			\begin{figure}[H]
 				\centering
@@ -431,7 +427,7 @@
 					The criteria for this check are that every rotation of the four contour vertices are at least a certain total distance away from their counterparts (summed up manhattan/city block distance in pixels). This minimum total distance is a function of the image size to normalise pixel units into units relative to the image dimensions. This relationship is \code{(image_size.width + image_size.height) * 0.5F * min_square_diff} or in other words, the mean image side length (to account for disproportionate image aspect ratios) multiplied by a constant factor set to $0.1$, i.e. 10\% of the mean image side length.
 			\end{enumerate}
 
-			Once all contours have been iterated through and the ones that fail these criteria have been filtered out, the result is a collection of contour quads that surround at least every card in the image (in the form of a \code{vector<vector<cv::Point> >} --- a vector of vectors with four points each). \emph{At least} every card in the image; the pruning process is not yet over!
+			Once all contours have been iterated through and the ones that fail these criteria have been filtered out, the result is a collection of contour quads that surround at least every card in the image (in the form of a \code{vector<vector<cv::Point>>} --- a vector of vectors with four points each). \emph{At least} every card in the image; the pruning process is not yet over!
 
 			The assortment of contours go through a secondary, later filtration process that requires processing the pixel data within these contours. To do this --- as well as to construct the card image matrices for subsequent classification --- the contour quad data is used to perspective transform the original image into a rectangular image of the card, an operation reviewed previously \secref{sec:isolation}.
 
@@ -461,7 +457,7 @@
 			Finally, there is one more processing step that needs to be undertaken before a detected card is deemed worthy enough to join its brethren in the detected card vector and \code{find_cards()} can return\ldots
 
 		\subsubsection{Rotation Correction}
-			One deal-breaking issue was the problem of a sequence of contour quad vertices starting at the wrong corner and, as a direct consequence, causing the final card image matrix to be perspective transformed incorrectly. This problem became evident when processing cards where the top-most corner in the image is numbered, such as the lower examples in figure~\ref{fig:rot}; the card could just be at a very strange perspective that projects to that shape.
+			One critical issue was the problem of a sequence of contour quad vertices starting at the wrong corner and, as a direct consequence, causing the final card image matrix to be perspective transformed incorrectly. This problem became evident when processing cards where the top-most corner in the image is numbered, such as the lower examples in figure~\ref{fig:rot}; the card could just be at a very strange perspective that projects to that shape.
 
 			\begin{figure}[H]
 				\centering
@@ -475,7 +471,7 @@
 
 			The solution developed is simple and works very well. The same measure of whiteness as is used for the whole card is applied to both the top left and the bottom right corners of the card image matrix (the bounds for which are defined as static constants in the \code{Card} class based on physical measurements). If corner whiteness surpasses 80\%, the card quad is rotated by one vertex --- the direction or rotation being arbitrary due to a card's symmetry --- and transformed into a new image matrix.
 
-			The corner whiteness for this new image matrix is also measured, and compared against old corner whiteness. If it has a lesser corner whiteness measure than the old, that means that the old card image matrix was indeed oriented incorrectly and so the new one is used instead. If the opposite holds true, then the first overall whiteness threshold was passed incorrectly (perhaps due to some bizarre specular lighting that the CLAHE did not quite catch) and so the new mat is discarded and the old one's usage is continued as if nothing ever happened.
+			The corner whiteness for this new image matrix is also measured, and compared against old corner whiteness. If it has a lesser corner whiteness measure than the old, that means that the old card image matrix was indeed oriented incorrectly and so the new one is used instead. If the opposite holds true, then the first overall whiteness threshold was passed incorrectly (perhaps due to some unusual specular lighting that the CLAHE did not quite catch) and so the new image matrix is discarded and the old one's usage is continued as if nothing ever happened.
 
 			At long last, the \code{Card} vector contains all detected cards --- to a high degree of accuracy --- ready for individual processing and classification by the rest of the program, and the function can return.
 	\counterwithin{figure}{subsection}
@@ -485,7 +481,7 @@
 		\label{sec:typedet}
 		The next step is to figure out if a card is a picture or number type. This is particularly crucial for the branching down the pipeline in which picture card rank is detected with one algorithm while number card rank is detected with another \secref{sec:numdet}.
 
-		Fortunately, with standard brand Bicycle\textregistered poker cards --- the most common playing cards in the world --- detecting a card's type is not very difficult. Figure~\ref{fig:picture} shows an example of a picture card. Notice how the picture is completely boxed in (also refer to \ref{fig:innercont}).
+		Fortunately, with standard brand Bicycle\textregistered~poker cards --- the most common playing cards in the world --- detecting a card's type is not very difficult. Figure~\ref{fig:picture} shows an example of a picture card. Notice how the picture is completely boxed in (also refer to \ref{fig:innercont}).
 
 		\begin{figure}[H]
 			\centering
@@ -494,7 +490,7 @@
 			\label{fig:picture}
 		\end{figure}
 
-		The same function that was used for finding card contours earlier \secref{sec:isolation} in \source{isolation.cpp}{app:isolationcpp}, \code{find_quads()}, is also applied to a card's image matrix from within the function \code{detect_type()} in \source{classification.cpp}{app:classificationcpp}. If a single quad contour with an area large enough for it not to be the ace of diamond's diamond is found within the card, it is classified as a picture card and that information is stored the card's object of type \code{Card}.
+		The same function that was used for finding card contours earlier \secref{sec:isolation} in \source{isolation.cpp}{app:isolationcpp}, \code{find_quads()}, is also applied to a card's image matrix from within the function \code{detect_type()} in \source{classification.cpp}{app:classificationcpp}. If a single quad contour with an area large enough for it not to be the ace of diamond's diamond is found within the card, it is classified as a picture card and that information is stored the card's \code{Card} data structure.
 	\subsection{Value/Rank and Suit Symbol Isolation}
 		Since pure HoM was found to (unsurprisingly) be very time intensive, even after cutting the templates to be matched in half via colour detection, a shortcut needed to be found for rank and suit detection. The solution is to locate and isolate the value/rank symbol and the suit symbol and, once scaled, apply HoM to just those subimages.
 
@@ -517,7 +513,7 @@
 		\begin{figure}[H]
 			\centering
 			\includegraphics[width=0.4\textwidth]{symfind}
-			\caption{An example of a the results window of a single picture card image}
+			\caption{An example of the results window of a single picture card image}
 			\label{fig:symfind}
 		\end{figure}
 
@@ -539,9 +535,9 @@
 	Due to the nature of this system, evaluation is not very easy to do. In general, there are two high-level phases: card isolation and card classification. With isolation, there are so many possible scenarios and environments (one card, ten cards, fifty cards, partial occlusion, day, night, motion blur etc.) that it is impossible to test for all of them. Therefore, for the purpose of validation. A number of criteria were created.
 
 	\begin{enumerate}
-		\item Every card would be sampled at least four times where it is the only card in the image. The sample size per card is only four due to the fact that card appearance will not change across samples. Only images with single cards are processed due to the fact that there are too many combinations for multiple cards.
+		\item Every card would be sampled at least four times where it is the only card in the image. The sample size per card is only four due to the fact that card appearance will not change across samples. Only images with single cards are processed due to the fact that the number of permutations is considerably large and would require disproportionate effort to perform for multiple cards.
 		\item Every sample image is at a resolution of 640x480. Since it was already proven that multiple cards can be recognised, it is assumed that if a single card in a low resolution can be recognised, that the same card can be recognised in an image with multiple cards. 640x480 is a common resolution for cheap webcams. The resolution is fixed to not introduce discrepancies in processing speed/complexities.
-		\item The background is matte green and the setting is a well-lit indoor room. This is to emulate the most realistic practical use case for this system; a casino table. A fixed webcam takes overhead images at a low resolution and at a low height to emulate a realistic scenarios where a high resolution camera can be used to capture multiple cards from a high height above a poker table for instance.
+		\item The background is matte green and the setting is a well-lit indoor room. This is to emulate the most realistic practical use case for this system; a casino table. A fixed webcam takes overhead images at a low resolution and at a low height to emulate a realistic scenario where a high resolution camera can be used to capture multiple cards from a high height above a poker table for instance.
 		\item The minimum 4 samples for any card are captured with the card parallel to the camera, but at differing orientations. These are tilted to the left (e.g. Figure~\ref{fig:webcam}; zoom in if reading digitally), straightened, tilted to the right, and on its side (by 90 degrees). The other orientations are redundant due to a card's symmetry.
 		\item If all four samples are classified correctly, it is assumed that the system will continue to do so for that card and is deemed valid. If the system misclassifies a card four samples in a row, then a total of eight samples are captured instead of four to make sure the misclassification was not a fluke and to increase the sample size somewhat for added accuracy.
 		\item In addition, the system is run on a blank background to test the ability to detect that there are no cards.
@@ -630,7 +626,7 @@
 
 	Notice how colour classification accuracy is at 100\%. Suit accuracy however is not perfect. This data shows that diamonds are always classified as diamonds but some hearts are also classified as diamonds; diamond classification is too aggressive. The same goes for clubs with respect to spades. This would become more clear if the rows and columns in Table~\ref{tab:genconf} were sorted by suit first, then value/rank. That table shows however that type detection (i.e. numbers vs. picture cards) accuracy is at 96.55\%.
 
-	Overall system accuracy is at 93\%. While this is not amazing, bear in mind the small sample sizes per card due to the nature of this system. If for example the sample size was four and 1/4 was classified incorrectly by some fluke or random chance occurrence, already that is a performance of 75\%. With a sample size of 100 per card for instance, the same fluke would be reduced to 1/100 --- or a performance of 99\%.
+	Overall system accuracy is at 93\%. While this is not spectacular, bear in mind the small sample sizes per card due to the nature of this system. If for example the sample size was four and 1/4 was classified incorrectly by some fluke or random chance occurrence, already that is a performance of 75\%. With a sample size of 100 per card for instance, the same fluke would be reduced to 1/100 --- or a performance of 99\%.
 
 	Furthermore, 50/52 (96.2\%) of the cards could be successfully identified. The ones that could not were the Ace of Spades --- due to the complex motif in its centre which the system did not have a contingency for --- and the 7 of hearts which had its orientation incorrectly rotated due to one of the heart symbols encroaching in on corner space and confusing the whiteness measure function discussed earlier. Clearly there is some room for improvement under the circumstances, yet all things considered, the system works quite splendidly.
 
@@ -675,12 +671,12 @@
 		Evaluation of the software has been performed by a structured progression from synthetic images through to real images of single cards, multiple cards per scene and finally accuracy measurement through use of a confusion matrix to identify miss-classifications.
 	\subsection{Improvements}
 		\label{sec:improvements}
-		Due to time limitation, the software was developed to work well with the most commonly encountered classic playing card style. Therefore the main weakness is that any kind of themed or differently stylized decks of cards will not result in the same level of performance. Other possible improvement include:
+		Due to time limitation, the software was developed to work well with the most commonly encountered classic playing card style. Therefore the main weakness is that any kind of themed or differently stylized decks of cards will not result in the same level of performance. Other possible improvements include:
 		\begin{itemize}
 			\item Improving the pre-processing and equalisation to reduce incorrectly identified card contours and better cope with more extreme lighting conditions.
 			\item Use a thread based approach (requires C++11 compilation, currently unused) to concurrently perform pattern matching and other time consuming processes to reduce time between image capture and classification output. More sample sizes can increase detection accuracy, as well as possible orientation matching to utilise the suit symbol in the lower right corner of the card to improve accuracy.
 			\item Implement more data interfaces such as output to a CSV file, integration with a TCP connection for remote monitoring and processing, or to a connected microcontroller for more immediate environment interaction. 
-			\item The possibility of implementation on a GPU proper using CUDA or OpenCL could be explored, allowing much faster classification as well as a higher rate.
+			\item The possibility of implementation on a GPU proper using CUDA or OpenCL could be explored, allowing much faster classification.
 		\end{itemize}
 \pagebreak
 \thispagestyle{empty}
@@ -692,6 +688,7 @@
 			\centering
 			\includegraphics[width=\textwidth]{chris/image36}
 		\end{figure}
+		Report contributions by section are 1, 2.1.2, 3.1, 4.1, 4.2, 4.4, 4.7, 4.8, 4.9 and 6 for Chris and 2.1.1, 4.3, 4.5, 4.6, and 5 for Yousef. Each member generally wrote about the parts of the project they were involved with. Git was used for collaboration and version control.
 	\pagebreak
 	\section{Fully Documented Source Code Listings}
 		\lstset{
