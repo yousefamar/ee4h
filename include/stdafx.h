@@ -3,9 +3,10 @@
 #pragma once
 
 //C++ libs
+#include <stdio.h>
 #include <iostream>
 #include <string>
-#include <strstream>
+#include <sstream>
 #include <math.h>
 
 //OpenCV libs
