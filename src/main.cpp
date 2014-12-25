@@ -143,7 +143,7 @@ int main(int argc, char **argv)
 
 			cout << "Press space to take a photo" << endl;
 
-			char key;
+			int key;
 			do
 			{
 				key = cvWaitKey(10);

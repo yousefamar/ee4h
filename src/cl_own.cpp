@@ -103,7 +103,7 @@ cv::Mat binary_operation(cv::Mat input, int mode, int element_size)
 		int half = (element_size - 1) / 2;
 
 		//For all X x Y pixels
-		int result = 0;
+		uchar result = 0;
 		for(int y = 0; y < input.rows; y++)
 		{
 			for(int x = 0; x < input.cols; x++)

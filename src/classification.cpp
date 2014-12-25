@@ -315,9 +315,9 @@ void detect_value_picture(Card *card)
 	}
 
 	//Do matches using colour info integration
-	matches[JACK] += (int)round(hit_or_miss_score(mat_rank_1c, se_symbols[JACK]) * 100.0F);
-	matches[QUEEN] += (int)round(hit_or_miss_score(mat_rank_1c, se_symbols[QUEEN]) * 100.0F);
-	matches[KING] += (int)round(hit_or_miss_score(mat_rank_1c, se_symbols[KING]) * 100.0F);
+	matches[JACK] += (int)round_(hit_or_miss_score(mat_rank_1c, se_symbols[JACK]) * 100.0F);
+	matches[QUEEN] += (int)round_(hit_or_miss_score(mat_rank_1c, se_symbols[QUEEN]) * 100.0F);
+	matches[KING] += (int)round_(hit_or_miss_score(mat_rank_1c, se_symbols[KING]) * 100.0F);
 
 	cv::imshow("input", mat_rank_1c);
 	cv::imshow("template", se_symbols[QUEEN]);	//Only relevant for threecards.jpg
@@ -390,13 +390,13 @@ void find_suit_sym(Card *card)
 	//Do matches using colour info integration
 	if(card->detected_colour == Card::RED)
 	{
-		matches[DIAMOND] += (int)round(hit_or_miss_score(mat_sym_1c, se_symbols[DIAMOND]) * 100.0F);
-		matches[HEART] += (int)round(hit_or_miss_score(mat_sym_1c, se_symbols[HEART]) * 100.0F);
+		matches[DIAMOND] += (int)round_(hit_or_miss_score(mat_sym_1c, se_symbols[DIAMOND]) * 100.0F);
+		matches[HEART] += (int)round_(hit_or_miss_score(mat_sym_1c, se_symbols[HEART]) * 100.0F);
 	}
 	else if(card->detected_colour == Card::BLACK)
 	{
-		matches[CLUB] += (int)round(hit_or_miss_score(mat_sym_1c, se_symbols[CLUB]) * 100.0F);
-		matches[SPADE] += (int)round(hit_or_miss_score(mat_sym_1c, se_symbols[SPADE]) * 100.0F);
+		matches[CLUB] += (int)round_(hit_or_miss_score(mat_sym_1c, se_symbols[CLUB]) * 100.0F);
+		matches[SPADE] += (int)round_(hit_or_miss_score(mat_sym_1c, se_symbols[SPADE]) * 100.0F);
 	}
 	else
 	{

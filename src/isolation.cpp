@@ -232,7 +232,7 @@ int find_cards(cv::Mat input, vector<Card>* cards)
 	std::vector<cv::Point2f> quad_pts;
 	std::vector<cv::Point2f> corners;
 
-	for (int i = 0; i < squares.size(); ++i)
+	for (vector<Card>::size_type i = 0; i < squares.size(); ++i)
 	{
 		// Define the destination image
 		cv::Mat quad = cv::Mat::zeros(Card::HEIGHT, Card::WIDTH, CV_8UC3);
