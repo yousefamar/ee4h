@@ -456,7 +456,7 @@ float hit_or_miss_score(cv::Mat img, cv::Mat se_image)
 			in_channels = img.channels(),
 			se_channels = se_image.channels();
 
-		int total = img.rows * img.cols;
+		// int total = img.rows * img.cols;
 
 		//For each position, try and find a match
 		int matched_pixels = 0;
