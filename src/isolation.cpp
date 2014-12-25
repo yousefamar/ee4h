@@ -127,7 +127,7 @@ void find_squares(cv::Mat image, vector<vector<cv::Point> >& squares, int thresh
 	vector<cv::Point> approx;
 	bool is_duplicate_contour = false;
 	bool is_inside_another = false;
-	int min_square_diff_rel = (image_size.width + image_size.height) * 0.5F * min_square_diff;
+	int min_square_diff_rel = static_cast<int>((image_size.width + image_size.height) * 0.5F * min_square_diff);
 
 	// test each contour
 	for(size_t i = 0; i < contours.size(); i++)
@@ -135,7 +135,7 @@ void find_squares(cv::Mat image, vector<vector<cv::Point> >& squares, int thresh
 		// approximate contour
 		cv::approxPolyDP(cv::Mat(contours[i]), approx, cv::arcLength(cv::Mat(contours[i]), true)*0.02, true);
 
-		int area = fabs(cv::contourArea(cv::Mat(approx)));
+		int area = static_cast<int>(fabs(cv::contourArea(cv::Mat(approx))));
 
 		if( approx.size() == 4 &&	//4 corners
 			area > (image_size.width * image_size.height * 0.04F) &&	//Area larger than 0.04 of the image in pixels
@@ -240,15 +240,15 @@ int find_cards(cv::Mat input, vector<Card>* cards)
 		// Corners of the destination image
 		quad_pts.clear();
 		quad_pts.push_back(cv::Point2f(0, 0));
-		quad_pts.push_back(cv::Point2f(quad.cols, 0));
-		quad_pts.push_back(cv::Point2f(quad.cols, quad.rows));
-		quad_pts.push_back(cv::Point2f(0, quad.rows));
+		quad_pts.push_back(cv::Point2f(static_cast<float>(quad.cols), 0));
+		quad_pts.push_back(cv::Point2f(static_cast<float>(quad.cols), static_cast<float>(quad.rows)));
+		quad_pts.push_back(cv::Point2f(0, static_cast<float>(quad.rows)));
 
 		corners.clear();
-		corners.push_back(cv::Point2f(squares[i][3].x, squares[i][3].y));
-		corners.push_back(cv::Point2f(squares[i][2].x, squares[i][2].y));
-		corners.push_back(cv::Point2f(squares[i][1].x, squares[i][1].y));
-		corners.push_back(cv::Point2f(squares[i][0].x, squares[i][0].y));
+		corners.push_back(cv::Point2f(static_cast<float>(squares[i][3].x), static_cast<float>(squares[i][3].y)));
+		corners.push_back(cv::Point2f(static_cast<float>(squares[i][2].x), static_cast<float>(squares[i][2].y)));
+		corners.push_back(cv::Point2f(static_cast<float>(squares[i][1].x), static_cast<float>(squares[i][1].y)));
+		corners.push_back(cv::Point2f(static_cast<float>(squares[i][0].x), static_cast<float>(squares[i][0].y)));
 
 		// Get transformation matrix
 		cv::Mat transmtx = cv::getPerspectiveTransform(corners, quad_pts);
