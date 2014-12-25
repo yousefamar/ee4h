@@ -152,7 +152,7 @@ void find_squares(cv::Mat image, vector<vector<cv::Point> >& squares, int thresh
 					for (int i = 0; i < 4; ++i)
 					{
 						vector<cv::Point> square = squares[j];
-						rotate(&square[0], &square[i], &square[4]);
+						rotate(square.begin(), square.begin() + i, square.end());
 						if (square_diff(square, approx) < min_square_diff_rel)
 						{
 							is_duplicate_contour = true;
@@ -272,7 +272,7 @@ int find_cards(cv::Mat input, vector<Card>* cards)
 		if (whiteness > 0.8F)
 		{
 			cv::Mat quad_rot;
-			rotate(&corners[0], &corners[1], &corners[4]);
+			rotate(corners.begin(), corners.begin() + 1, corners.end());
 			cv::Mat transmtx = cv::getPerspectiveTransform(corners, quad_pts);
 			cv::warpPerspective(input, quad_rot, transmtx, quad.size());
 
