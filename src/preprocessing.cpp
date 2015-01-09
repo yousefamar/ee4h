@@ -21,7 +21,7 @@ using namespace std;
   * Returns
   * cv::Mat: A binary thresholded image matrix
   */
-cv::Mat binary_threshold(cv::Mat input, float threshold_value, int min, int max)
+cv::Mat binary_threshold(cv::Mat input, float threshold_value, uchar min, uchar max)
 {
 	//Get size
 	cv::Size input_size = input.size();
@@ -135,7 +135,7 @@ cv::Mat make_background_black(cv::Mat input, int white_level)
   * Returns
   * cv::Mat: An image matrix with only the red channel remaining
   */
-cv::Mat filter_red_channel(cv::Mat input, int new_value)
+cv::Mat filter_red_channel(cv::Mat input, uchar new_value)
 {
 	//Get size
 	cv::Size input_size = input.size();

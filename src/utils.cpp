@@ -134,7 +134,7 @@ bool is_in_image(int x, int y, int width, int height)
  * Returns:
  * double: Nearest integer in double format
  */
-double round(double d)
+double round_(double d)
 {
   return floor(d + 0.5);
 }
